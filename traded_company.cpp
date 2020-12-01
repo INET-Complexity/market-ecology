@@ -134,8 +134,6 @@ time_point traded_company::act(time_interval interval, std::seed_seq &seed)
 /// \return
 std::optional<dividend_policy> traded_company::upcoming_dividend(time_interval interval, std::seed_seq &seed)
 {
-    std::minstd_rand0 generator_(seed);
-
     unsigned int dividend_receiving_shares_ = 0;
     for(const auto &[s, q]: shares_outstanding) {
         if(s.dividend) {
