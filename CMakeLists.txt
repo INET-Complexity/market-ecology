@@ -161,8 +161,6 @@ SET(SOURCE_FILES main.cpp
         strategies/kelly_bettor.hpp
         strategies/kelly_bettor.cpp
 
-        strategies/allocation.hpp
-
         strategies/constant_demand.hpp
         strategies/constant_demand.cpp
 
@@ -184,7 +182,7 @@ SET(SOURCE_FILES main.cpp
 
 #list(TRANSFORM ESL_SOURCES PREPEND "ESL/")
 
-ADD_EXECUTABLE(me ${SOURCE_FILES} ${ESL_SOURCES})
+ADD_EXECUTABLE(market_ecology ${SOURCE_FILES} ${ESL_SOURCES})
 
 ################################################################################
 
