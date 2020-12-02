@@ -419,10 +419,19 @@ int main(int argument_count, char *arguments[])
     std::transform(experiment_.begin(), experiment_.end(), experiment_.begin(),
                    [](unsigned char c){ return std::tolower(c); });
 
-    if("experiment_3" == experiment_){
+    if("experiment_3" == experiment_) {
         experiment_3();
+
+    }else if("experiment_4" == experiment_){
+        experiment_4();
+
+    }else if("experiment_5" == experiment_){
+        double reinvestment_rate = 1.0;
+        experiment_5(reinvestment_rate);
+
     }else if("experiment_3_best" == experiment_){
         experiment_3_best(64);
+
     }else if("experiment_6" == experiment_){
         experiment_6();
     }
