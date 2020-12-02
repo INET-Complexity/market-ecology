@@ -56,6 +56,8 @@ using std::dynamic_pointer_cast;
 
 #include <boost/program_options.hpp>
 #include <experiment/e_3_grid.hpp>
+#include <experiment/e_4_trajectories.hpp>
+#include <experiment/e_5.hpp>
 using namespace boost::program_options;
 
 ////////////////////////////////////////////////////////////////////////////////
