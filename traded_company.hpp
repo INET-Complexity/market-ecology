@@ -114,7 +114,7 @@ public:
     ///
     [[nodiscard]] esl::economics::price income() const
     {
-        return esl::economics::price(0, this->primary_jurisdiction.tender);
+        return esl::economics::price(0, primary_jurisdiction.tender);
     }
 
     ///
@@ -122,7 +122,7 @@ public:
     ///
     [[nodiscard]] esl::economics::price book_value() const
     {
-        return esl::economics::price(0, this->primary_jurisdiction.tender);
+        return esl::economics::price(0, primary_jurisdiction.tender);
     }
 
     ///
@@ -130,7 +130,7 @@ public:
     ///
     [[nodiscard]] esl::economics::price debt() const
     {
-        return esl::economics::price(0, this->primary_jurisdiction.tender);
+        return esl::economics::price(0, primary_jurisdiction.tender);
     }
 
     ///
@@ -138,7 +138,7 @@ public:
     /// \return
     [[nodiscard]] esl::economics::price sales() const
     {
-        return esl::economics::price(0, this->primary_jurisdiction.tender);
+        return esl::economics::price(0, primary_jurisdiction.tender);
     }
 
     ///
@@ -146,7 +146,7 @@ public:
     /// \return
     [[nodiscard]] esl::economics::price costs() const
     {
-        return esl::economics::price(0, this->primary_jurisdiction.tender);
+        return esl::economics::price(0, primary_jurisdiction.tender);
     }
 
     ///
@@ -154,7 +154,7 @@ public:
     /// \return
     [[nodiscard]] esl::economics::price historic_earnings(/*time span*/) const
     {
-        return esl::economics::price(0, this->primary_jurisdiction.tender);
+        return esl::economics::price(0, primary_jurisdiction.tender);
     }
 };
 
