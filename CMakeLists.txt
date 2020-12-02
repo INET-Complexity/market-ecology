@@ -150,8 +150,6 @@ SET(SOURCE_FILES main.cpp
         traded_company.cpp traded_company.hpp
         fund.cpp fund.hpp
 
-        strategies/noise_trader.cpp strategies/noise_trader.hpp
-
         strategies/fundamental_value/dividend_discount.hpp
         strategies/fundamental_value/dividend_discount.cpp
 

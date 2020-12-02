@@ -22,18 +22,17 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include "noise_trader.hpp"
-
 #include <utility>
 
 #include <esl/data/log.hpp>
-using economics::finance::securities_lending_contract;
+
+#include "constant_demand.hpp"
+
+using esl::economics::finance::securities_lending_contract;
 
 using namespace esl;
 using namespace esl::economics;
 using namespace esl::economics::markets;
-
-#include "constant_demand.hpp"
 
 
 constant_demand::constant_demand(const identity<fund> &i, const jurisdiction &j)
@@ -45,7 +44,8 @@ constant_demand::constant_demand(const identity<fund> &i, const jurisdiction &j)
 
 }
 
-time_point constant_demand::invest(std::shared_ptr<walras::quote_message> message, simulation::time_interval interval, std::seed_seq &seed)
+time_point constant_demand::invest( std::shared_ptr<walras::quote_message> message
+                                  , simulation::time_interval interval, std::seed_seq &seed)
 {
     if(message->received < interval.lower){
         return interval.lower;
@@ -53,6 +53,7 @@ time_point constant_demand::invest(std::shared_ptr<walras::quote_message> messag
 
     demand.clear();
     for(auto [p,q]: message->proposed){
+        // the demand for each property is one (constant)
         demand.emplace(p->identifier, 1.0);
     }
 
@@ -64,7 +65,6 @@ time_point constant_demand::invest(std::shared_ptr<walras::quote_message> messag
 
 
     output_signal->put(interval.lower, 1.0);
-
 
     for(auto [p,q]: owner<stock>::properties.items){
         if(0 == q.amount){

@@ -49,7 +49,6 @@ using std::dynamic_pointer_cast;
 
 #include "strategies/fundamental_value/mean_reverting_noise.hpp"
 #include "strategies/fundamental_value/dividend_discount.hpp"
-#include "strategies/noise_trader.hpp"
 #include "strategies/technical/momentum.hpp"
 #include "strategies/constant_demand.hpp"
 
