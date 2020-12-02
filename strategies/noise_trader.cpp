@@ -33,7 +33,6 @@ using namespace esl;
 using namespace esl::economics;
 using namespace esl::economics::markets;
 
-#include "allocation.hpp"
 
 
 noise_trader::noise_trader(const identity<fund> &i, const jurisdiction &j)
