@@ -63,7 +63,6 @@ public:
 };
 
 
-
 #include <esl/economics/markets/walras/differentiable_order_message.hpp>
 #include <esl/economics/price.hpp>
 using namespace esl;

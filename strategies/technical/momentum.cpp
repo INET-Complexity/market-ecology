@@ -92,8 +92,9 @@ time_point momentum::invest(shared_ptr<quote_message> message, time_interval int
         double trend_ = 0.;
         std::map<time_point, price> &prices_ = i->second;
         if(!prices_.empty() && prices_.rbegin()->first > window_){
-            if(prices_.size()>this->window){
-                trend_ = double(prices_[interval.lower - window+1]) / std::max(0.0001, double(prices_[interval.lower - window])) - 1;
+            if(prices_.size() > window){
+                //trend_ = double(prices_[interval.lower - window + 1]) / std::max(0.0001, double(prices_[interval.lower - window])) - 1;
+                trend_ = double(prices_[interval.lower - window + 1]) / std::max(0.0001, double(prices_[interval.lower - window])) - 1;
                 trend_ *= 10;
             }
         }
@@ -148,7 +149,7 @@ momentum_ddsf::excess_demand(
             auto value_ = double(i->second);
             auto j = this->supply.find(k);
             if(supply.end() == j){
-                result_.emplace(k,  scale_ / (quoted_price_ * variable_) * (value_ -  (quoted_price_ * variable_)) - 0);
+                result_.emplace(k,  scale_ / (quoted_price_ * variable_) * ( value_ -  (quoted_price_ * variable_)) - 0);
             }else{
                 auto supply_long_ = double(std::get<0>(j->second));
                 auto supply_short_ = double(std::get<1>(j->second));
@@ -156,6 +157,7 @@ momentum_ddsf::excess_demand(
                 result_.emplace(k, scale_ *
                                    (lambda_ / (1. + std::exp(  - agression * value_)) - lambda_ / 2. + 0.5 )
                                    - (supply_long_ - supply_short_) * (quoted_price_ * variable_)
+
                 );
             }
         }

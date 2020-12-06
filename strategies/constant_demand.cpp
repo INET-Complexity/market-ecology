@@ -127,8 +127,7 @@ const
                 auto supply_long_  = double(std::get<0>(j->second));
                 auto supply_short_ = double(std::get<1>(j->second));
 
-                result_.emplace(k, scale_ - (supply_long_ - supply_short_) * (quoted_price_ * variable_)
-                );
+                result_.emplace(k, scale_ - (supply_long_ - supply_short_) * (quoted_price_ * variable_));
             }
         }
     }

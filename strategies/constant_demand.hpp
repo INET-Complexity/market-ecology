@@ -41,6 +41,7 @@ using law::jurisdictions::US;
 #include <map>
 
 
+
 class constant_demand
 : public fund
 {
@@ -61,7 +62,7 @@ public:
 /// \brief
 ///
 struct constant_demand_ddsf
-        : public differentiable_order_message
+: public differentiable_order_message
 {
     esl::economics::price net_asset_value;
 
@@ -76,13 +77,11 @@ struct constant_demand_ddsf
 
     constant_demand_ddsf
             ( const identity<agent> &sender
-                    , const identity<agent> &recipient
-
-                    , time_point sent     = time_point()
-                    , time_point received = time_point()
-                    , esl::economics::price nav = price::approximate(0.00, USD)
-                    , std::map<identity<law::property>, double> variates = {}
-
+            , const identity<agent> &recipient
+            , time_point sent     = time_point()
+            , time_point received = time_point()
+            , esl::economics::price nav = price::approximate(0.00, USD)
+            , std::map<identity<law::property>, double> variates = {}
             );
 
 
