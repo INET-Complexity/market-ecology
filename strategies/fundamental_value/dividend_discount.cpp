@@ -158,8 +158,7 @@ dividend_discount_ddsf::excess_demand(
             }else{
                 auto supply_long_ = double(std::get<0>(j->second));
                 auto supply_short_ = double(std::get<1>(j->second));
-
-                result_.emplace(k, scale_ * (lambda_ / (1. + adept::exp(- agression * (std::log2(value_) - adept::log2(quoted_price_ * variable_)))) - lambda_/2 +0.5  )
+                result_.emplace(k, scale_ *(lambda_ / (1. + adept::exp(- agression * (std::log2(value_) - adept::log2(quoted_price_ * variable_)))) - lambda_/2 +0.5  )
                 - (supply_long_ - supply_short_) * (quoted_price_ * variable_));
             }
         }

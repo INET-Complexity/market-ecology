@@ -2,7 +2,7 @@
 // Created by Maarten on 02/06/2020.
 //
 
-#include "e_4_trajectories.hpp"
+#include "experiment_4_trajectories.hpp"
 
 
 #include <iostream>

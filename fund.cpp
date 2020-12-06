@@ -163,13 +163,6 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
     output_cash->put(ti.lower, cash_);
     net_asset_value_ = cash_ + stocks_ + lending_ + loans_;
 
-    if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
-        auto pnl_ = net_asset_value_ - previous_net_asset_value.value();
-        auto flows_ = (reinvestment_rate) * double(pnl_);
-        net_asset_value_ = previous_net_asset_value.value() + price(flows_, net_asset_value_.valuation);
-    }
-
-
     ///
     /// If we are re-setting wealth in an experiment then
     /// `target_net_asset_value` is set to the value that we reset wealth to.
@@ -193,8 +186,6 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
             output_pnl->put(ti.lower, pnl);
         }
     }
-
-    previous_net_asset_value = net_asset_value_;
 
     output_net_asset_value->put(ti.lower, net_asset_value_);
     return net_asset_value_;

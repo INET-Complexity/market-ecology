@@ -35,7 +35,6 @@ using namespace esl::economics::markets;
 
 #include "constant_demand.hpp"
 
-
 kelly_bettor::kelly_bettor(const identity<fund> &i, const jurisdiction &j)
     : agent(i)
     , owner<cash>(i)
@@ -56,8 +55,12 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
         demand.emplace(p->identifier, 1.0);
     }
 
-    auto nav_ = net_asset_value(interval);
+    auto nav_ =  net_asset_value(interval);
     LOG(trace) << describe() << " " << identifier << " inventory " <<  inventory << std::endl;
+
+
+
+
 
     auto m = this->template create_message<kelly_bettor_ddsf>(
         message->sender, interval.lower, (*this), message->sender,
@@ -85,7 +88,7 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
 
 std::string kelly_bettor::describe() const
 {
-    return "kelly bettor";
+    return "constant demand";
 }
 
 ///

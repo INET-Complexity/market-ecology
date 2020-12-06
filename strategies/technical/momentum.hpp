@@ -1,8 +1,8 @@
-/// \file   momentum_investor.cpp
+/// \file   momentum_investor.hpp
 ///
 /// \brief
 ///
-/// \authors    Maarten P. Scholl
+/// \authors    maarten
 /// \date       2020-02-13
 /// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 /// Oxford Martin School, University of Oxford

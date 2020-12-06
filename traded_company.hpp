@@ -31,6 +31,7 @@ using esl::simulation::time_interval;
 using esl::economics::finance::dividend_policy;
 using esl::economics::price;
 
+
 ///
 /// \brief  A traded company issues shares and pays dividends
 ///

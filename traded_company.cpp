@@ -25,15 +25,18 @@ using esl::economics::finance::dividend_announcement_message;
 
 #include <random>
 
-using namespace esl;
-using namespace esl::economics;
-using namespace esl::economics::finance;
-using namespace esl::law;
-
+using esl::identity;
+using esl::economics::cash;
+using esl::economics::price;
 using esl::economics::accounting::inventory_filter;
+using esl::economics::finance::stock;
+using esl::economics::finance::share_class;
+using esl::law::owner;
 using esl::economics::currencies::USD;
+using esl::law::property;
 using esl::interaction::transfer;
 using esl::economics::accounting::inventory_filter;
+using esl::economics::finance::dividend_policy;
 
 ///
 /// \param i
@@ -42,7 +45,7 @@ traded_company::traded_company( const identity<traded_company> &i
                               , const jurisdiction &j
                               , uint64_t sample
                               , time_point end_point
-                              )
+                               )
 : agent(i)
 , owner<cash>(i)
 , owner<stock>(i)
@@ -108,12 +111,11 @@ time_point traded_company::act(time_interval interval, std::seed_seq &seed)
             last_announced_ = policy_.announcement_date;
 
             for(const auto &s : unique_shareholders()) {
-                // notifies agents of upcoming dividend
                 this->template create_message<dividend_announcement_message>(
                         s, interval.lower, this->identifier, s, policy_);
             }
         }
-    }else{
+    } else {
         next_event_ = std::min<time_point>(
                 policy_.announcement_date, next_event_);
     }
@@ -122,7 +124,7 @@ time_point traded_company::act(time_interval interval, std::seed_seq &seed)
         if(last_payment_ < policy_.announcement_date) {
             last_payment_ = policy_.announcement_date;
         }
-    }else{
+    } else {
         next_event_ = std::min<time_point>(
                 policy_.announcement_date, next_event_);
     }
@@ -134,26 +136,34 @@ time_point traded_company::act(time_interval interval, std::seed_seq &seed)
 /// \return
 std::optional<dividend_policy> traded_company::upcoming_dividend(time_interval interval, std::seed_seq &seed)
 {
+    std::minstd_rand0 generator_(seed);
+
     unsigned int dividend_receiving_shares_ = 0;
-    for(const auto &[s, q]: shares_outstanding) {
+    for(const auto &[s, q] : shares_outstanding) {
         if(s.dividend) {
             dividend_receiving_shares_ += q;
         }
     }
 
+
     outputs["dividend_per_share"]->write(std::make_tuple(interval.lower,
                                                          dividends_per_share[interval.lower]));
+    if(interval.lower > 1 && dividends_per_share[interval.lower] != dividends_per_share[interval.lower-1]){
+        //std::cout << interval << " DIV!" << std::endl;
+    }
+    auto unappropriated_profit_ =
+        esl::economics::cash(USD).price( dividends_per_share[interval.lower] *
+                                        dividend_receiving_shares_);
+    //LOG(trace) << "company " << identifier << " pays out "
+    //           << unappropriated_profit_
+    //           << " in profits, distributed over "
+    //           << dividend_receiving_shares_ << " shares, "
+    //           << dividend_per_share
+    //           << " (" << (dividend_per_share / (0.02 - mu)) << ")"
+    //           << std::endl;
 
-    auto unappropriated_profit_ = cash(USD).price(
-        dividends_per_share[interval.lower] * dividend_receiving_shares_);
-
-    LOG(trace) << "company " << identifier << " pays out "
-               << unappropriated_profit_
-               << " in profits, distributed over "
-               << dividend_receiving_shares_ << " shares"
-               << std::endl;
-
-    auto dividends_ = compute_dividend_per_share(unappropriated_profit_);
+    auto dividends_ =
+        compute_dividend_per_share(unappropriated_profit_);
 
     dividend_policy policy_(
             interval.lower

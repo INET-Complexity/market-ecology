@@ -51,8 +51,8 @@ IF(CMAKE_BUILD_TYPE MATCHES RELEASE OR ESL_BUILD_RELEASE MATCHES RELEASE)
     endif()
 ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE OR ESL_BUILD_RELEASE MATCHES RELEASE)
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -Og")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og ")#    --coverage -fprofile-arcs -ftest-coverage")
+SET(CMAKE_C_FLAGS_DEBUG "-g")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
+SET(CMAKE_CXX_FLAGS_DEBUG "-g ")#    --coverage -fprofile-arcs -ftest-coverage")
 
 SET(CMAKE_C_FLAGS_RELEASE "-O3  ")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3  ")
@@ -165,14 +165,17 @@ SET(SOURCE_FILES main.cpp
         strategies/fundamental_value/mean_reverting_noise.cpp
         strategies/fundamental_value/mean_reverting_noise.hpp
 
-        experiment/e_3_grid.cpp
-        experiment/e_3_grid.hpp
+        experiment/experiment_1_population_fluctuations.cpp
+        experiment/experiment_1_population_fluctuations.hpp
 
-        experiment/e_4_trajectories.cpp
-        experiment/e_4_trajectories.hpp
+        experiment/experiment_3_simplex.cpp
+        experiment/experiment_3_simplex.hpp
 
-        experiment/e_5.cpp
-        experiment/e_5.hpp
+        experiment/experiment_4_trajectories.cpp
+        experiment/experiment_4_trajectories.hpp
+
+        experiment/experiment_5_flows.cpp
+        experiment/experiment_5_flows.hpp
 
         experiment/e_6.cpp
         experiment/e_6.hpp
