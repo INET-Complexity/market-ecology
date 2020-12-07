@@ -177,26 +177,29 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
             }
         }
 
-    }else{
-        if(! output_net_asset_value->values.empty() ){
-            auto pnl = net_asset_value_ - std::get<1>( output_net_asset_value->values.back() );
-            output_pnl->put(ti.lower, pnl);
-        }
+    }else if(! output_net_asset_value->values.empty() ){
+        auto pnl = net_asset_value_ - std::get<1>( output_net_asset_value->values.back() );
+        output_pnl->put(ti.lower, pnl);
     }
+
+
+    double pad_[4096] = {0.};
 
 
     if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
-        double change_ = (reinvestment_rate -1.) * (double(net_asset_value_) - double(previous_net_asset_value.value()));
-
+        int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
         for(auto &[p, q]: inventory){
             auto cast_ = std::dynamic_pointer_cast<cash>(p);
             if(cast_){
-                net_asset_value_ += price::approximate(change_, net_asset_value_.valuation);
-                inventory[p].amount += int(change_);
+
+                //net_asset_value_ += price::approximate(change_, net_asset_value_.valuation);
+
+                inventory[p].amount += std::max<int64_t>(-((int64_t)inventory[p].amount), change_);
             }
         }
     }
-    previous_net_asset_value = net_asset_value_;
+
+    previous_net_asset_value = double(net_asset_value_);
 
     output_net_asset_value->put(ti.lower, net_asset_value_);
     return net_asset_value_;
