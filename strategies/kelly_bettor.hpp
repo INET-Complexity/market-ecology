@@ -37,6 +37,10 @@ using simulation::time_point;
 using simulation::time_interval;
 using namespace esl::economics::markets::walras;
 
+
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
+
 #include <map>
 
 
@@ -44,9 +48,18 @@ class kelly_bettor
 : public fund
 {
 public:
+    boost::accumulators::accumulator_set<double,
+                boost::accumulators::stats< boost::accumulators::tag::mean
+                                          , boost::accumulators::tag::moment<2>
+                                          >
+                                         > estimates;
+
+
     explicit kelly_bettor(const identity<fund> &i, const jurisdiction &j = law::jurisdictions::US);
 
     std::map<identity<law::property>, double> demand;
+
+    price past_price;
 
     time_point invest(std::shared_ptr<esl::economics::markets::walras::quote_message> message,
                       time_interval interval, std::seed_seq &seed) override;

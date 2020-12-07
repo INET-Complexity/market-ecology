@@ -83,6 +83,12 @@ time_point dividend_discount::invest(
             gordon_ = std::max(std::min(gordon_, 1'000.00), lower_limit_);
             fundamental_value_.value =  int64_t(gordon_* 100) ;
             output_signal->put(interval.lower, gordon_);
+
+
+
+
+
+
         }
 
         if(valuations_.end() != valuations_.find(property_->identifier)){
