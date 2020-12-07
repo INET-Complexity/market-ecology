@@ -106,7 +106,7 @@ public:
     double reinvestment_rate = 1.0;
 
 
-    std::optional<price> previous_net_asset_value;
+    std::optional<double> previous_net_asset_value;
 
 
     ///

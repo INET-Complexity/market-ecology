@@ -40,6 +40,7 @@ time_point mean_reverting_noise_trader::invest(
     if(nav_.value <= 0){
         return interval.upper;
     }
+
     //LOG(trace) << describe() << " " << identifier <<  " inventory " <<  inventory << std::endl;
 
     std::default_random_engine generator(seed );
