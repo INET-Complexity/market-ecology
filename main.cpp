@@ -72,7 +72,6 @@ int main(int argument_count, char *arguments[])
 #if defined(WIN32) || defined(_WIN32) || (defined(__WIN32) && !defined(__CYGWIN__))
     SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
 #endif
-
     // set preferred floating point format
     std::cout.setf(std::ios::fixed, std::ios::floatfield);
     std::cout.setf(std::ios::showpoint);
@@ -85,7 +84,7 @@ int main(int argument_count, char *arguments[])
     description_.add_options()
         ("help", "produce help message")
         ("experiment", value<std::string>()->default_value("experiment_5"), "choose experiment")
-        ("reinvest", value<double>()->default_value(1.0), "reinvest rate (1.0)")
+        ("reinvestment", value<double>()->default_value(1.0), "reinvestment rate")
         ("stocks", value<unsigned int>()->default_value(1), "set the number of stocks")
         ;
 
