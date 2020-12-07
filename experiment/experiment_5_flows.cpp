@@ -178,11 +178,10 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     property_map<markets::quote> traded_assets_;
     property_map<size_t> shares_outstanding_;
 
-    const std::string prefix_ = "output/experiment5leastinvestment/run_"
+    const std::string prefix_ = "output/experiment5_" + std::to_string(reinvestment_rate) + "/run_"
                                 + std::to_string(nt) + "_"
                                 + std::to_string(fv) + "_"
-                                + std::to_string(tf) + "_"
-                                + std::to_string(reinvestment_rate)
+                                + std::to_string(tf)
                                 + "_sample_" + std::to_string(sample) +"/";
 
     if(std::filesystem::exists(prefix_)){
