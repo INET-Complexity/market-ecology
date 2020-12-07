@@ -182,10 +182,6 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
         output_pnl->put(ti.lower, pnl);
     }
 
-
-    double pad_[4096] = {0.};
-
-
     if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
         int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
         for(auto &[p, q]: inventory){
