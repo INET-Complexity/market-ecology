@@ -40,7 +40,6 @@ using std::make_tuple;
 using std::dynamic_pointer_cast;
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "experiment/e_6.hpp"
 #include "strategies/constant_demand.hpp"
 #include "strategies/fundamental_value/dividend_discount.hpp"
 #include "strategies/fundamental_value/mean_reverting_noise.hpp"
@@ -49,21 +48,18 @@ using std::dynamic_pointer_cast;
 #include <experiment/experiment_3_simplex.hpp>
 #include <experiment/experiment_4_trajectories.hpp>
 #include <experiment/experiment_5_flows.hpp>
+#include <experiment/e_6.hpp>
+
 ////////////////////////////////////////////////////////////////////////////////
-
-
 
 #include <boost/program_options.hpp>
 using namespace boost::program_options;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
 #endif
-
 
 ///
 /// \param argument_count
@@ -88,7 +84,8 @@ int main(int argument_count, char *arguments[])
     options_description description_("Allowed options");
     description_.add_options()
         ("help", "produce help message")
-        ("experiment", value<std::string>()->default_value("experiment_3_best"), "choose experiment")
+        ("experiment", value<std::string>()->default_value("experiment_5"), "choose experiment")
+        ("reinvest", value<double>()->default_value(1.0), "reinvest rate (1.0)")
         ("stocks", value<unsigned int>()->default_value(1), "set the number of stocks")
         ;
 
@@ -120,7 +117,7 @@ int main(int argument_count, char *arguments[])
         experiment_4();
 
     }else if("experiment_5" == experiment_){
-        double reinvestment_rate = 1.0;
+        double reinvestment_rate = arguments_["reinvestment"].as<double>();
         experiment_5(reinvestment_rate);
 
     }else if("experiment_3_best" == experiment_){

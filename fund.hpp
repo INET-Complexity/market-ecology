@@ -103,7 +103,9 @@ public:
     /// \brief  For feedback on paper:
     ///         funds get reinvestment_rate * PNL for the next time step
     ///
-    double reinvestment_rate = 0.1;
+    double reinvestment_rate = 1.0;
+
+
     std::optional<price> previous_net_asset_value;
 
 

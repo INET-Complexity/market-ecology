@@ -181,8 +181,10 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     const std::string prefix_ = "output/experiment5leastinvestment/run_"
                                 + std::to_string(nt) + "_"
                                 + std::to_string(fv) + "_"
-                                + std::to_string(tf) + "_sample_"
-                                + std::to_string(sample) +"/";
+                                + std::to_string(tf) + "_"
+                                + std::to_string(reinvestment_rate)
+                                + "_sample_" + std::to_string(sample) +"/";
+
     if(std::filesystem::exists(prefix_)){
         return {nt, fv, tf};
     }
@@ -240,7 +242,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     mr_->aggression = nt_agg;
     mr_->maximum_leverage = nt_lev;
     mr_->target_date = 252*2;
-    //mr_->reinvestment_rate = reinvestment_rate;
+    mr_->reinvestment_rate = reinvestment_rate;
     participants_.push_back(mr_);
     set_outputs(mr_);
 
@@ -249,7 +251,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     fv_->aggression = fv_agg;
     fv_->maximum_leverage = fv_lev;
     fv_->target_date = 252*2;
-    //fv_->reinvestment_rate = reinvestment_rate;
+    fv_->reinvestment_rate = reinvestment_rate;
     participants_.push_back(fv_);
     set_outputs(fv_);
 
@@ -258,7 +260,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     tf_->aggression = tf_agg;
     tf_->maximum_leverage = tf_lev;
     tf_->target_date = 252*2;
-    //tf_->reinvestment_rate = reinvestment_rate;
+    tf_->reinvestment_rate = reinvestment_rate;
     participants_.push_back(tf_);
     set_outputs(tf_);
 

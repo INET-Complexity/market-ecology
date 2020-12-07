@@ -144,7 +144,6 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
 
     auto cash1_ = valuate<cash>(inventory, lookup_);
 
-
     auto stocks_ = valuate<stock>(inventory, lookup_);
     output_stocks->put(ti.lower, stocks_);
 
@@ -158,8 +157,6 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
     auto net_asset_value_ = cash1_ + stocks_ + lending_ + loans_;
 
     auto cash_ = price::approximate(double(cash1_) * risk_free_, cash1_.valuation);
-
-
     output_cash->put(ti.lower, cash_);
     net_asset_value_ = cash_ + stocks_ + lending_ + loans_;
 
@@ -186,6 +183,20 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
             output_pnl->put(ti.lower, pnl);
         }
     }
+
+
+    if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
+        double change_ = (reinvestment_rate -1.) * (double(net_asset_value_) - double(previous_net_asset_value.value()));
+
+        for(auto &[p, q]: inventory){
+            auto cast_ = std::dynamic_pointer_cast<cash>(p);
+            if(cast_){
+                net_asset_value_ += price::approximate(change_, net_asset_value_.valuation);
+                inventory[p].amount += int(change_);
+            }
+        }
+    }
+    previous_net_asset_value = net_asset_value_;
 
     output_net_asset_value->put(ti.lower, net_asset_value_);
     return net_asset_value_;
