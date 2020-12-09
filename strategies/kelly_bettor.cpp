@@ -57,38 +57,52 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
         demand.emplace(p->identifier, 1.0);
     }
 
+
+
     auto nav_ =  net_asset_value(interval);
     LOG(trace) << describe() << " " << identifier << " inventory " <<  inventory << std::endl;
+    double signal_ = 0.;
 
 
+    if(interval.lower > 100) {
+        std::map<identity<property>, double> valuations_;
+        for(auto [property_, quote_] : message->proposed) {
+            auto price_ = std::get<price>(quote_.type);
+
+            auto i = market_data.dividend_per_share.find(*property_);
+            // it is assumed all assets are quoted with a price
+            if(i != market_data.dividend_per_share.end()) {
+                // in this simplified model, we assume there is one dividend payment per period, and therefore the dividend yield is in USD/day
+                estimates(std::log(double(price_) / double(past_price)));
+                past_price = price_;
+                auto payment_ = double(i->second);
+                auto shares_outstanding_ =
+                    market_data.shares_outstanding.find(property_->identifier)
+                        ->second;
+                auto dividend_rate_ = (payment_ / shares_outstanding_ / double( price_));
+
+                auto m = boost::accumulators::mean(estimates);
+                auto d = dividend_rate_;
+                auto s = std::sqrt(boost::accumulators::variance(estimates));
 
 
-    std::map<identity<property>, price> valuations_;
-    for(auto [property_, quote_]: message->proposed) {
-        auto price_ = std::get<price>(quote_.type);
+                //m = std::pow(1+m,252)-1;
+                //d = std::pow(1+d,252)-1;
+                //s = s * std::sqrt(252.);
 
-        auto i = market_data.dividend_per_share.find(*property_);
-        // it is assumed all assets are quoted with a price
-        auto fundamental_value_ = std::get<price>(quote_.type);
-        if(i != market_data.dividend_per_share.end()){
-            // in this simplified model, we assume there is one dividend payment
-            // per period, and therefore the dividend yield is in USD/day
+                // fractional kelly
+                double c = aggression;
 
+                double r = 0.00007858;  //   annual
+                signal_  = c * (m + d - r) / (s * s);
+//                std::cout << std::setprecision(10);
+//                std::cout << "kelly crit " << signal_ << " m " << m << " d "
+//                          << d << " r " << r << " s " << s << std::endl;
+                output_signal->put(interval.lower, signal_);
+            }
+            // valuations_.emplace(property_->identifier, signal_);
 
-            estimates(std::log(double(price_)) -  std::log(double(past_price)));
-
-            auto m = std::exp(boost::accumulators::mean(estimates)) - 1;
-            auto s = std::exp(boost::accumulators::moment<2>(estimates)) - 1;
-
-            double sig = m/s;
-
-            output_signal->put(interval.lower, sig);
-        }
-
-        if(valuations_.end() != valuations_.find(property_->identifier)){
-            valuations_.find(property_->identifier)->second.value = fundamental_value_.value;
-        }else{
-            valuations_.emplace(property_->identifier, fundamental_value_);
+            demand.emplace(property_->identifier, signal_);
         }
     }
 
@@ -96,9 +110,6 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
     auto m = this->template create_message<kelly_bettor_ddsf>(
         message->sender, interval.lower, (*this), message->sender,
         interval.lower, interval.lower,nav_,demand);
-
-    output_signal->put(interval.lower, 1.0);
-
 
     for(auto [p,q]: owner<stock>::properties.items){
         if(0 == q.amount){
@@ -119,7 +130,7 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
 
 std::string kelly_bettor::describe() const
 {
-    return "constant demand";
+    return "kelly bettor";
 }
 
 ///
@@ -156,12 +167,10 @@ const
             auto value_ = i->second;
             auto j = supply.find(k);
             if(supply.end() == j){
-                result_.emplace(k,  scale_ * 0.5 * value_);
+                result_.emplace(k,  scale_ * value_ * value_);
             }else{
                 auto supply_long_  = double(std::get<0>(j->second));
                 auto supply_short_ = double(std::get<1>(j->second));
-
-                auto signal_ = 1.0;
 
                 result_.emplace(k, scale_ * value_ - (supply_long_ - supply_short_) * (quoted_price_ * variable_)
                 );
