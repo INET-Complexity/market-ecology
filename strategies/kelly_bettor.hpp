@@ -50,7 +50,7 @@ class kelly_bettor
 public:
     boost::accumulators::accumulator_set<double,
                 boost::accumulators::stats< boost::accumulators::tag::mean
-                                          , boost::accumulators::tag::moment<2>
+                                          , boost::accumulators::tag::variance
                                           >
                                          > estimates;
 

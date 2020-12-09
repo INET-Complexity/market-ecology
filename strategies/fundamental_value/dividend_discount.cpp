@@ -79,8 +79,9 @@ time_point dividend_discount::invest(
             auto lower_limit_ = 0.000'000'1;
             growth_ = std::max(growth_, lower_limit_);
             auto compounded_rate_return_ = 0.000'2; // FVI expects company to appreciate at this rate
-            auto gordon_ = dividend_rate_ / (std::max(0.000'1, compounded_rate_return_ - growth_));
-            gordon_ = std::max(std::min(gordon_, 1'000.00), lower_limit_);
+            auto finite_minimum_ = 0.000'1;
+            auto gordon_ = dividend_rate_ / (std::max(finite_minimum_, compounded_rate_return_ - growth_));
+            gordon_ = std::max(std::min(gordon_, 10'000.00), lower_limit_);
             fundamental_value_.value =  int64_t(gordon_* 100) ;
             output_signal->put(interval.lower, gordon_);
         }

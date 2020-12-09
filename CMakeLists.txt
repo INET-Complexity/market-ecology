@@ -177,8 +177,8 @@ SET(SOURCE_FILES main.cpp
         experiment/experiment_5_flows.cpp
         experiment/experiment_5_flows.hpp
 
-        experiment/e_6.cpp
-        experiment/e_6.hpp
+        experiment/experiment_6_kelly.cpp
+        experiment/experiment_6_kelly.hpp
         )
 
 #list(TRANSFORM ESL_SOURCES PREPEND "ESL/")
