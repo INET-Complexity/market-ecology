@@ -160,6 +160,17 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
     output_cash->put(ti.lower, cash_);
     net_asset_value_ = cash_ + stocks_ + lending_ + loans_;
 
+    if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
+        int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
+        for(auto &[p, q]: inventory){
+            auto cast_ = std::dynamic_pointer_cast<cash>(p);
+            if(cast_){
+                net_asset_value_ += price::approximate(change_, net_asset_value_.valuation);
+                inventory[p].amount += std::max<int64_t>(-((int64_t)inventory[p].amount), change_);
+            }
+        }
+    }
+
     ///
     /// If we are re-setting wealth in an experiment then
     /// `target_net_asset_value` is set to the value that we reset wealth to.
@@ -182,18 +193,7 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
         output_pnl->put(ti.lower, pnl);
     }
 
-    if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
-        int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
-        for(auto &[p, q]: inventory){
-            auto cast_ = std::dynamic_pointer_cast<cash>(p);
-            if(cast_){
 
-                //net_asset_value_ += price::approximate(change_, net_asset_value_.valuation);
-
-                inventory[p].amount += std::max<int64_t>(-((int64_t)inventory[p].amount), change_);
-            }
-        }
-    }
 
     previous_net_asset_value = double(net_asset_value_);
 
