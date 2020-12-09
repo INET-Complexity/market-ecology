@@ -267,7 +267,7 @@ int experiment_6_(uint64_t sample, double nt_agg, double nt_lev, double fv_agg, 
             , fv_lev
             , tf_agg
             , tf_lev) );
-        if(results_.size() >= 1){//96){
+        if(results_.size() >= 96){
             for(auto &r: results_){
                 r.wait();
             }
