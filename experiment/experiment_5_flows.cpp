@@ -330,7 +330,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
 ///
 /// \param sample
 /// \return
-int experiment_5(double reinvestment_rate)
+int experiment_5(double reinvestment_rate, size_t threads)
 {
     size_t progress_ = 0;
     uint64_t subsamples_ = 16;
@@ -344,7 +344,6 @@ int experiment_5(double reinvestment_rate)
             if (c[0] <= 0. || c[1] <= 0. || c[2] <= 0.) {
                 continue;
             }
-
             combinations_.push_back(c);
         }
 
@@ -359,22 +358,26 @@ int experiment_5(double reinvestment_rate)
 
         LOG(warning) << combinations_ << std::endl;
         std::cout << "starting " << combinations_.size() << " tasks" << std::endl;
-        for(size_t T = 0; T < 1; ++T) {
-            for (auto c: combinations_) {
-                results_.emplace_back(pool_.enqueue_task(experiment_5_task, progress_, 1, c[0], c[1], c[2], reinvestment_rate));
-                progress_ += 1;
 
-                if (results_.size() >= combinations_.size()) {
-                    combinations2_.clear();
-                    for (auto &r: results_) {
-                        r.wait();
-                        combinations2_.push_back(r.get());
-                    }
-                    results_.clear();
-                    combinations_ = combinations2_;
+        for (auto c: combinations_) {
+            results_.emplace_back(pool_.enqueue_task(experiment_5_task, progress_, 1, c[0], c[1], c[2], reinvestment_rate));
+            progress_ += 1;
+
+            if (results_.size() >= threads) {
+                combinations2_.clear();
+                for (auto &r: results_) {
+                    r.wait();
+                    combinations2_.push_back(r.get());
                 }
+                results_.clear();
+                //combinations_ = combinations2_;
             }
         }
+    }
+
+    for (auto &r: results_) {
+        r.wait();
+        combinations2_.push_back(r.get());
     }
     return 0;
 }
