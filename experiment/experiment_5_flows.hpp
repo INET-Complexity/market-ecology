@@ -9,5 +9,4 @@
 
 int experiment_5(double reinvestment_rate = 1.0, std::size_t threads = 4096);
 
-
 #endif //ME_E_5_HPP

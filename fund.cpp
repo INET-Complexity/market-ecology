@@ -160,8 +160,23 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
     output_cash->put(ti.lower, cash_);
     net_asset_value_ = cash_ + stocks_ + lending_ + loans_;
 
+    ///
+    /// \brief  This section relates to the reinvestment rate experiments,
+    ///         where we introduce (unseen) retail investors that
+    ///         invest based on the performance of the fund
+    ///
     if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
-        int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
+
+
+        double returns_ =  double(net_asset_value_) / previous_net_asset_value.value() - 1;
+        double compound_returns_f_ = std::pow(1 + returns_, reinvestment_rate) - 1;
+
+        // OLD rule matching papers
+        //int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
+        // new rule
+
+        int64_t change_ = static_cast<int64_t>(round(compound_returns_f_ * previous_net_asset_value.value()));
+
         for(auto &[p, q]: inventory){
             auto cast_ = std::dynamic_pointer_cast<cash>(p);
             if(cast_){

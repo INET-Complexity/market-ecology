@@ -79,16 +79,20 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
                 auto shares_outstanding_ =
                     market_data.shares_outstanding.find(property_->identifier)
                         ->second;
-                auto dividend_rate_ = (payment_ / shares_outstanding_ / double( price_));
+                auto dividend_rate_ = (payment_ / shares_outstanding_)/ double( price_);
 
                 auto m = boost::accumulators::mean(estimates);
                 auto d = dividend_rate_;
                 auto s = std::sqrt(boost::accumulators::variance(estimates));
 
 
-                //m = std::pow(1+m,252)-1;
-                //d = std::pow(1+d,252)-1;
-                //s = s * std::sqrt(252.);
+                m = std::pow(1+m,252)-1;
+                d = std::pow(1+d,252)-1;
+                s *= std::sqrt(252.);
+
+                std::cout << std::setprecision(6) << "mean: " << m << std::endl;
+                std::cout << std::setprecision(6) << "dividend: " << d << "," << dividend_rate_ << std::endl;
+                std::cout << std::setprecision(6) << "stddev: " << s << std::setprecision(2) << std::endl;
 
                 // fractional kelly
                 double c = aggression;
