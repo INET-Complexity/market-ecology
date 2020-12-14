@@ -240,7 +240,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     mr_->target_net_asset_value.emplace(target_nav_nt_);
     mr_->aggression = nt_agg;
     mr_->maximum_leverage = nt_lev;
-    mr_->target_date = 252*2;
+    mr_->target_date = 100;
     mr_->reinvestment_rate = reinvestment_rate;
     participants_.push_back(mr_);
     set_outputs(mr_);
@@ -249,7 +249,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     fv_->target_net_asset_value.emplace(target_nav_fv_);
     fv_->aggression = fv_agg;
     fv_->maximum_leverage = fv_lev;
-    fv_->target_date = 252*2;
+    fv_->target_date = 100;
     fv_->reinvestment_rate = reinvestment_rate;
     participants_.push_back(fv_);
     set_outputs(fv_);
@@ -258,7 +258,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     tf_->target_net_asset_value.emplace(target_nav_tf_);
     tf_->aggression = tf_agg;
     tf_->maximum_leverage = tf_lev;
-    tf_->target_date = 252*2;
+    tf_->target_date = 100;
     tf_->reinvestment_rate = reinvestment_rate;
     participants_.push_back(tf_);
     set_outputs(tf_);
@@ -266,16 +266,19 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     for(const auto &fund: participants_){
         LOG(trace) << fund->identifier << " " << fund->describe() << std::endl;
     }
+
+    double large_precision_ = 1'000'000'000.00;
+
     auto cash_ = std::make_shared<cash>(USD);
     quantity cash_amounts_[3] =  {
-            cash_->amount(nt > 0 ?  1000'000'000.00 : 0.00),
-            cash_->amount(fv > 0 ?  1000'000'000.00 : 0.00),
-            cash_->amount(tf > 0 ?  1000'000'000.00 : 0.00),
+            cash_->amount(nt > 0 ?  large_precision_ : 0.00),
+            cash_->amount(fv > 0 ?  large_precision_ : 0.00),
+            cash_->amount(tf > 0 ?  large_precision_ : 0.00),
     };
     quantity loan_amounts[3] =  {
-            quantity(nt > 0 ? 999'000'000 + (1. - nt) * 1'000'000 : 0),
-            quantity(fv > 0 ? 999'000'000 + (1. - fv) * 1'000'000 : 0),
-            quantity(tf > 0 ? 999'000'000 + (1. - tf) * 1'000'000 : 0),
+            quantity(nt > 0 ? (large_precision_-1'000'000) + (1. - nt) * 1'000'000 : 0),
+            quantity(fv > 0 ? (large_precision_-1'000'000) + (1. - fv) * 1'000'000 : 0),
+            quantity(tf > 0 ? (large_precision_-1'000'000) + (1. - tf) * 1'000'000 : 0),
     };
     quantity stock_amounts[3] =  {
             quantity(nt > 0 ? nt * 10'000 : 0),

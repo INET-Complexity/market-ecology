@@ -26,7 +26,7 @@
 
 #include <utility>
 
-
+#include <boost/accumulators/statistics/mean.hpp>
 
 #include <esl/data/log.hpp>
 using economics::finance::securities_lending_contract;
@@ -64,41 +64,51 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
     double signal_ = 0.;
 
 
-    if(interval.lower > 100) {
-        std::map<identity<property>, double> valuations_;
-        for(auto [property_, quote_] : message->proposed) {
-            auto price_ = std::get<price>(quote_.type);
 
-            auto i = market_data.dividend_per_share.find(*property_);
-            // it is assumed all assets are quoted with a price
-            if(i != market_data.dividend_per_share.end()) {
-                // in this simplified model, we assume there is one dividend payment per period, and therefore the dividend yield is in USD/day
-                estimates(std::log(double(price_) / double(past_price)));
+    std::map<identity<property>, double> valuations_;
+    for(auto [property_, quote_] : message->proposed) {
+        auto price_ = std::get<price>(quote_.type);
+
+        auto i = market_data.dividend_per_share.find(*property_);
+        // it is assumed all assets are quoted with a price
+        if(i != market_data.dividend_per_share.end()) {
+            // in this simplified model, we assume there is one dividend payment per period, and therefore the dividend yield is in USD/day
+            auto return_ = (double(price_) / double(past_price)) - 1;
+
+            estimates(return_);
+
+            if(interval.lower > 100) {
                 past_price = price_;
                 auto payment_ = double(i->second);
                 auto shares_outstanding_ =
                     market_data.shares_outstanding.find(property_->identifier)
                         ->second;
-                auto dividend_rate_ = (payment_ / shares_outstanding_)/ double( price_);
+                auto dividend_rate_ = (payment_ / shares_outstanding_);
 
-                auto m = boost::accumulators::mean(estimates);
+                auto m = (double(price_) / 100.00) - 1;
                 auto d = dividend_rate_;
                 auto s = std::sqrt(boost::accumulators::variance(estimates));
 
+//                std::cout << std::setprecision(6) << "d: " << d << std::endl;
 
-                m = std::pow(1+m,252)-1;
-                d = std::pow(1+d,252)-1;
+                m = std::pow(1+m,252./(interval.lower))-1;
+
+                m = std::min(1.00, std::max(-1.00, m));
+
+                //d = std::pow(1+d,252)-1;
                 s *= std::sqrt(252.);
 
-                std::cout << std::setprecision(6) << "mean: " << m << std::endl;
-                std::cout << std::setprecision(6) << "dividend: " << d << "," << dividend_rate_ << std::endl;
-                std::cout << std::setprecision(6) << "stddev: " << s << std::setprecision(2) << std::endl;
+                s = std::min(2.00, std::max(0.01, s));
+
+//                std::cout << std::setprecision(6) << "mean: " << m << std::endl;
+//                std::cout << std::setprecision(6) << "dividend: " << d << "," << dividend_rate_ << std::endl;
+//                std::cout << std::setprecision(6) << "stddev: " << s << std::setprecision(2) << std::endl;
 
                 // fractional kelly
                 double c = aggression;
 
-                double r = 0.00007858;  //   annual
-                signal_  = c * (m + d - r) / (s * s);
+                double r = 0.01;  //   annual
+                signal_  = 1.0;//c * (m + d - r) / (s * s);
 //                std::cout << std::setprecision(10);
 //                std::cout << "kelly crit " << signal_ << " m " << m << " d "
 //                          << d << " r " << r << " s " << s << std::endl;
@@ -176,7 +186,9 @@ const
                 auto supply_long_  = double(std::get<0>(j->second));
                 auto supply_short_ = double(std::get<1>(j->second));
 
-                result_.emplace(k, scale_ * value_ - (supply_long_ - supply_short_) * (quoted_price_ * variable_)
+                auto lambda_ = 1 * 2;
+                auto agression = 1.0;
+                result_.emplace(k, scale_ * ((lambda_ / (1. + std::exp( - agression * value_ ))) - lambda_/2 + 0.5) - (supply_long_ - supply_short_) * (quoted_price_ * variable_)
                 );
             }
         }

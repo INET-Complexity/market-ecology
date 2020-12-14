@@ -77,7 +77,7 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 {
     unsigned int stocks_count               = assets;
     environment e;
-    model model_(e, parametrization(0, 0, 101*252));
+    model model_(e, parametrization(0, 0, 101 * 252));
 
     std::dynamic_pointer_cast<simulation::parameter::constant<std::uint64_t>>(model_.parameters.values["sample"])->choice = sample;
 
@@ -248,8 +248,15 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 ///
 /// \param sample
 /// \return
-int experiment_6_(uint64_t sample, double nt_agg, double nt_lev, double fv_agg, double fv_lev, double tf_agg, double tf_lev
-    , size_t subsamples = 64 )
+int experiment_6_( uint64_t sample
+                 , double nt_agg
+                 , double nt_lev
+                 , double fv_agg
+                 , double fv_lev
+                 , double tf_agg
+                 , double tf_lev
+                 , size_t subsamples = 16
+                 )
 {
     uint64_t subsamples_ = subsamples; // 64
     esl::computation::thread_pool pool_;
@@ -270,16 +277,18 @@ int experiment_6_(uint64_t sample, double nt_agg, double nt_lev, double fv_agg, 
             , fv_lev
             , tf_agg
             , tf_lev) );
-        if(results_.size() >= 1){
+        if(results_.size() >= 4096){
             for(auto &r: results_){
                 r.wait();
             }
             results_.clear();
         }
     }
+    for(auto &r: results_){
+        r.wait();
+    }
     return 0;
 }
-
 
 
 int experiment_6_best(unsigned int precision)

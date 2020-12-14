@@ -169,19 +169,20 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
 
 
         double returns_ =  double(net_asset_value_) / previous_net_asset_value.value() - 1;
-        double compound_returns_f_ = std::pow(1 + returns_, reinvestment_rate) - 1;
+        double compound_returns_f_ = std::pow(1 + returns_, reinvestment_rate - 1) - 1;
 
         // OLD rule matching papers
         //int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
         // new rule
 
-        int64_t change_ = static_cast<int64_t>(round(compound_returns_f_ * previous_net_asset_value.value()));
+        double change_ =compound_returns_f_ * double(net_asset_value_);
 
         for(auto &[p, q]: inventory){
             auto cast_ = std::dynamic_pointer_cast<cash>(p);
             if(cast_){
                 net_asset_value_ += price::approximate(change_, net_asset_value_.valuation);
-                inventory[p].amount += std::max<int64_t>(-((int64_t)inventory[p].amount), change_);
+                auto qchange_ = std::max<int64_t>(-((int64_t)inventory[p].amount), change_);
+                inventory[p].amount += qchange_ * 100;
             }
         }
     }
