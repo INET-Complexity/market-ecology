@@ -273,19 +273,19 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
 
     auto cash_ = std::make_shared<cash>(USD);
     quantity cash_amounts_[3] =  {
-            cash_->amount(nt > 0 ?  large_precision_ : 0.00),
-            cash_->amount(fv > 0 ?  large_precision_ : 0.00),
-            cash_->amount(tf > 0 ?  large_precision_ : 0.00),
+        cash_->amount(nt > 0 ?  10'000'000'000.00 : 0.00),
+        cash_->amount(fv > 0 ?  10'000'000'000.00 : 0.00),
+        cash_->amount(tf > 0 ?  10'000'000'000.00 : 0.00),
     };
     quantity loan_amounts[3] =  {
-            quantity(nt > 0 ? 100 * ((large_precision_-1'000'000) + (1. - nt) * 1'000'000) : 0),
-            quantity(fv > 0 ? 100 * ((large_precision_-1'000'000) + (1. - fv) * 1'000'000) : 0),
-            quantity(tf > 0 ? 100 * ((large_precision_-1'000'000) + (1. - tf) * 1'000'000) : 0),
+        quantity(nt > 0 ? 9'999'000'000 + (1. - nt) * 1'000'000 : 0),
+        quantity(fv > 0 ? 9'999'000'000 + (1. - fv) * 1'000'000 : 0),
+        quantity(tf > 0 ? 9'999'000'000 + (1. - tf) * 1'000'000 : 0),
     };
     quantity stock_amounts[3] =  {
-            quantity(nt > 0 ? nt * 10'000 : 0),
-            quantity(fv > 0 ? fv * (nt == 0? 10'000 : 0) : 0),
-            quantity(tf > 0 ? tf * (nt == 0 && fv == 0? 10'000 : 0) : 0),
+        quantity(nt > 0 ? nt * 10'000 : 0),
+        quantity(fv > 0 ? fv * 10'000 : 0),
+        quantity(tf > 0 ? tf * 10'000 : 0),
     };
 
     for(auto [i, p] : enumerate(participants_)){           // 1. Add cash to participants
@@ -368,7 +368,7 @@ int experiment_5(double reinvestment_rate, size_t threads)
             results_.emplace_back(pool_.enqueue_task(experiment_5_task, progress_, 1, c[0], c[1], c[2], reinvestment_rate));
             progress_ += 1;
 
-            if (results_.size() >= std::thread::hardware_concurrency()) {
+            if (results_.size() >= 1) {
                 combinations2_.clear();
                 for (auto &r: results_) {
                     r.wait();
