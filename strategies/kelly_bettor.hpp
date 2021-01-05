@@ -43,16 +43,17 @@ using namespace esl::economics::markets::walras;
 
 #include <map>
 
+typedef boost::accumulators::accumulator_set<double,
+    boost::accumulators::stats< boost::accumulators::tag::mean
+        , boost::accumulators::tag::variance
+    >
+> statistical_estimates;
 
 class kelly_bettor
 : public fund
 {
 public:
-    boost::accumulators::accumulator_set<double,
-                boost::accumulators::stats< boost::accumulators::tag::mean
-                                          , boost::accumulators::tag::variance
-                                          >
-                                         > estimates;
+    statistical_estimates estimates;
 
 
     explicit kelly_bettor(const identity<fund> &i, const jurisdiction &j = law::jurisdictions::US);
@@ -85,6 +86,14 @@ struct kelly_bettor_ddsf
     /// \param sent
     /// \param received
     std::map<identity<law::property>, double> variates;
+
+    double dividend_rate;
+
+    price past_price;
+
+    simulation::time_point time;
+
+    statistical_estimates estimates;
 
     kelly_bettor_ddsf
         ( const identity<agent> &sender

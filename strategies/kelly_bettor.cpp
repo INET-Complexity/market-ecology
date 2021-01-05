@@ -37,13 +37,13 @@ using namespace esl::economics::markets;
 
 
 kelly_bettor::kelly_bettor(const identity<fund> &i, const jurisdiction &j)
-    : agent(i)
-    , owner<cash>(i)
-    , owner<stock>(i)
-    , fund(i, j)
-    , past_price(100'00, currencies::USD)
+: agent(i)
+, owner<cash>(i)
+, owner<stock>(i)
+, fund(i, j)
+, past_price(100'00, currencies::USD)
 {
-
+    estimates(0.);
 }
 
 time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, simulation::time_interval interval, std::seed_seq &seed)
@@ -57,88 +57,78 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
         demand.emplace(p->identifier, 1.0);
     }
 
-
-
     auto nav_ =  net_asset_value(interval);
     LOG(trace) << describe() << " " << identifier << " inventory " <<  inventory << std::endl;
-    double signal_ = 0.;
+    double update_value_ = 0.;
 
-
-
-    std::map<identity<property>, double> valuations_;
-    for(auto [property_, quote_] : message->proposed) {
-        auto price_ = std::get<price>(quote_.type);
-
-        auto i = market_data.dividend_per_share.find(*property_);
-        // it is assumed all assets are quoted with a price
-        if(i != market_data.dividend_per_share.end()) {
-            // in this simplified model, we assume there is one dividend payment per period, and therefore the dividend yield is in USD/day
-            auto return_ = (double(price_) / double(past_price)) - 1;
-
-            estimates(return_);
-
-            if(interval.lower > 100) {
-                past_price = price_;
-                auto payment_ = double(i->second);
-                auto shares_outstanding_ =
-                    market_data.shares_outstanding.find(property_->identifier)
-                        ->second;
-                auto dividend_rate_ = (payment_ / shares_outstanding_);
-
-                auto m = (double(price_) / 100.00) - 1;
-                auto d = dividend_rate_;
-                auto s = std::sqrt(boost::accumulators::variance(estimates));
-
-//                std::cout << std::setprecision(6) << "d: " << d << std::endl;
-
-                m = std::pow(1+m,252./(interval.lower))-1;
-
-                m = std::min(1.00, std::max(-1.00, m));
-
-                //d = std::pow(1+d,252)-1;
-                s *= std::sqrt(252.);
-
-                s = std::min(2.00, std::max(0.01, s));
-
-//                std::cout << std::setprecision(6) << "mean: " << m << std::endl;
-//                std::cout << std::setprecision(6) << "dividend: " << d << "," << dividend_rate_ << std::endl;
-//                std::cout << std::setprecision(6) << "stddev: " << s << std::setprecision(2) << std::endl;
-
-                // fractional kelly
-                double c = aggression;
-
-                double r = 0.01;  //   annual
-                signal_  = 1.0;//c * (m + d - r) / (s * s);
-//                std::cout << std::setprecision(10);
-//                std::cout << "kelly crit " << signal_ << " m " << m << " d "
-//                          << d << " r " << r << " s " << s << std::endl;
-                output_signal->put(interval.lower, signal_);
-            }
-            // valuations_.emplace(property_->identifier, signal_);
-
-            demand.emplace(property_->identifier, signal_);
-        }
+    if(interval.lower <= 10){
+        return interval.lower;
     }
-
 
     auto m = this->template create_message<kelly_bettor_ddsf>(
         message->sender, interval.lower, (*this), message->sender,
         interval.lower, interval.lower,nav_,demand);
 
+
+    price price_ = price::approximate(100.00, currencies::USD);
+    double dividend_rate = 0.;
+    for(auto [property_, quote_] : message->proposed) {
+
+        price_ = std::get<price>(quote_.type);
+
+        auto i = market_data.dividend_per_share.find(*property_);
+        // it is assumed all assets are quoted with a price
+        if(i != market_data.dividend_per_share.end()) {
+            // in this simplified model, we assume there is one dividend payment per period, and therefore the dividend yield is in USD/day
+
+            auto payment_ = double(i->second);
+            auto shares_outstanding_ = market_data.shares_outstanding.find(property_->identifier)->second;
+            dividend_rate = (payment_ / shares_outstanding_) ;
+            update_value_ = 0.01 * std::min(interval.lower, 100ul) * (
+                                (double(price_) / double(past_price)) - 1 + dividend_rate/ double(price_));
+            past_price = price_;
+        }
+    }
+    m->estimates = estimates;
+    m->time = interval.lower;
+
+    for(auto [p,q]: inventory){
+        auto cast_ = std::dynamic_pointer_cast<stock>(p);
+        if(cast_){
+            if(0 == q.amount){
+                continue;
+            }
+            m->supply.emplace(p->identifier, std::make_tuple(q, quantity(0)));
+        }else{
+            auto cast2_ = std::dynamic_pointer_cast<securities_lending_contract>(p);
+            if(cast2_){
+                if(0 == q.amount){
+                    continue;
+                }
+                if(m->supply.end() != m->supply.find(cast2_->security)){
+                    std::get<1>( m->supply.find(cast2_->security)->second ) = q;
+                }else{
+                    m->supply.emplace(cast2_->security, std::make_tuple(quantity(0), q));
+                }
+            }
+        }
+
+
+    }
+
     for(auto [p,q]: owner<stock>::properties.items){
-        if(0 == q.amount){
-            continue;
-        }
-        m->supply.emplace(p->identifier,std::make_tuple(q, quantity(0)));
-    }
 
+
+    }
     for(auto [p,q]: owner<securities_lending_contract>::properties.items){
-        if(0 == q.amount){
-            continue;
-        }
-        m->supply.emplace(p->security,std::make_tuple(quantity(0), q));
+
     }
 
+
+
+    m->past_price = past_price;
+    m->dividend_rate = dividend_rate;
+    estimates(update_value_);
     return interval.lower;
 }
 
@@ -186,9 +176,36 @@ const
                 auto supply_long_  = double(std::get<0>(j->second));
                 auto supply_short_ = double(std::get<1>(j->second));
 
-                auto lambda_ = 1 * 2;
-                auto agression = 1.0;
-                result_.emplace(k, scale_ * ((lambda_ / (1. + std::exp( - agression * value_ ))) - lambda_/2 + 0.5) - (supply_long_ - supply_short_) * (quoted_price_ * variable_)
+                double ease_in_ = 0.01 * std::min(time, 100ul);
+                ease_in_ *= ease_in_;
+
+                auto m = boost::accumulators::mean(estimates);
+                m = std::max(-0.5, std::min(0.5, std::pow(1. + ease_in_ * m, 252.)-1));
+
+                auto x = adept::value(quoted_price_ * variable_);
+                auto update_value_ = ease_in_ * ((x / double(past_price)) - 1 + dividend_rate/ double(x));
+
+
+                const_cast<decltype(estimates) &>( estimates)(update_value_);
+
+                auto sigma = std::sqrt(boost::accumulators::variance(estimates));
+                sigma = std::max(0.001, sigma);
+                sigma *= std::sqrt(252);
+
+                // fractional kelly
+                double c = ease_in_;
+                double r = 0.01;  //   annual
+//
+//                std::cout << std::setprecision(6) << "price=" << x
+//                          << " signal " << signal
+//                          << " mu " << mu
+//                          << " sigma " << sigma
+//                          << " d " << dividend_rate
+//                          << " t " << time << std::endl;
+
+                auto lambda_ = 0.9 * 2;
+                result_.emplace(k, scale_ * (lambda_ / (1. + adept::exp( - (c * ((m*time + (ease_in_ * ((quoted_price_ * variable_) / double(past_price) - 1 + dividend_rate/ (quoted_price_ * variable_))))/(time+1) - r) / (sigma*sigma)) )) - lambda_/2 + 0.5)
+                                       - (supply_long_ - supply_short_) * (quoted_price_ * variable_)
                 );
             }
         }

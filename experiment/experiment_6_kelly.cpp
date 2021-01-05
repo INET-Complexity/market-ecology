@@ -191,27 +191,28 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     participants_.push_back(kb_);
     set_outputs(kb_);
 
+
     for(const auto &fund: participants_){
         LOG(trace) << fund->identifier << " " << fund->describe() << std::endl;
     }
     auto cash_ = std::make_shared<cash>(USD);
     quantity cash_amounts_[4] =  {
-        cash_->amount(nt > 0 ?  1000'000'000.00 : 0.00),
-        cash_->amount(fv > 0 ?  1000'000'000.00 : 0.00),
-        cash_->amount(tf > 0 ?  1000'000'000.00 : 0.00),
-        cash_->amount(kb > 0 ?  1000'000'000.00 : 0.00),
+        cash_->amount(nt > 0 ?  10'000'000'000.00 : 0.00),
+        cash_->amount(fv > 0 ?  10'000'000'000.00 : 0.00),
+        cash_->amount(tf > 0 ?  10'000'000'000.00 : 0.00),
+        cash_->amount(kb > 0 ?  10'000'000'000.00 : 0.00),
     };
     quantity loan_amounts[4] =  {
-        quantity(nt > 0 ? 999'000'000 + (1. - nt) * 1'000'000 : 0),
-        quantity(fv > 0 ? 999'000'000 + (1. - fv) * 1'000'000 : 0),
-        quantity(tf > 0 ? 999'000'000 + (1. - tf) * 1'000'000 : 0),
-        quantity(kb > 0 ? 999'000'000 + (1. - tf) * 1'000'000 : 0),
+        quantity(nt > 0 ? 9'999'000'000 + (1. - nt) * 1'000'000 : 0),
+        quantity(fv > 0 ? 9'999'000'000 + (1. - fv) * 1'000'000 : 0),
+        quantity(tf > 0 ? 9'999'000'000 + (1. - tf) * 1'000'000 : 0),
+        quantity(kb > 0 ? 9'999'000'000 + (1. - kb) * 1'000'000 : 0),
     };
     quantity stock_amounts[4] =  {
         quantity(nt > 0 ? nt * 10'000 : 0),
-        quantity(fv > 0 ? fv * (nt == 0? 10'000 : 0) : 0),
-        quantity(tf > 0 ? tf * (nt == 0 && fv == 0? 10'000 : 0) : 0),
-        quantity(kb > 0 ? tf * (nt == 0 && fv == 0? 10'000 : 0) : 0),
+        quantity(fv > 0 ? fv * 10'000 : 0),
+        quantity(tf > 0 ? tf * 10'000 : 0),
+        quantity(kb > 0 ? kb * 10'000 : 0),
     };
 
     for(auto [i, p] : enumerate(participants_)){           // 1. Add cash to participants
@@ -261,10 +262,15 @@ int experiment_6_( uint64_t sample
     uint64_t subsamples_ = subsamples; // 64
     esl::computation::thread_pool pool_;
     std::vector<std::vector<double>> combinations_ = esl::sample_barycentric(3, subsamples_);
-    LOG(warning) << combinations_ << std::endl;
+    //LOG(warning) << combinations_ << std::endl;
     std::cout << "starting " << combinations_.size() << " tasks" << std::endl;
     std::vector<std::future<int>> results_;
     for (auto c: combinations_) {
+
+        if(c[0] <= 0 || c[1] <= 0 || c[2] <= 0){
+            continue;
+        }
+
         results_.emplace_back(pool_.enqueue_task(experiment_6_task
             , sample
             , 1
@@ -277,7 +283,7 @@ int experiment_6_( uint64_t sample
             , fv_lev
             , tf_agg
             , tf_lev) );
-        if(results_.size() >= 4096){
+        if(results_.size() >= 1){//std::thread::hardware_concurrency()){
             for(auto &r: results_){
                 r.wait();
             }
@@ -300,7 +306,7 @@ int experiment_6_best(unsigned int precision)
             , 10.
             , 8.
             , 4.
-            , 0.8
+            , 0.99
             , precision);
     }
     return 0;
