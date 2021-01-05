@@ -72,6 +72,9 @@ time_point momentum::invest(shared_ptr<quote_message> message, time_interval int
         return interval.upper;
     }
 
+    LOG(trace) << describe() << " " << identifier << " inventory " <<  inventory << std::endl;
+
+
     vector<tuple<identity<property>, double, size_t, double>> trends_;
     size_t index_ = 0;
     for(auto [stock_, quote_] : message->proposed) {
@@ -114,20 +117,25 @@ time_point momentum::invest(shared_ptr<quote_message> message, time_interval int
     message_->agression = this->aggression;
     message_->leverage = this->maximum_leverage;
 
-    for(auto [p,q]: owner<stock>::properties.items){
-        if(0 == q.amount){
-            continue;
-        }
-        message_->supply.emplace(p->identifier, std::make_tuple(q, quantity(0)));
-    }
-    for(auto [p,q]: owner<securities_lending_contract>::properties.items){
-        if(0 == q.amount){
-            continue;
-        }
-        if(message_->supply.end() != message_->supply.find(p->security)){
-            std::get<1>( message_->supply.find(p->security)->second ) = q;
+    for(auto [p,q]: inventory){
+        auto cast_ = std::dynamic_pointer_cast<stock>(p);
+        if(cast_){
+            if(0 == q.amount){
+                continue;
+            }
+            message_->supply.emplace(p->identifier, std::make_tuple(q, quantity(0)));
         }else{
-            message_->supply.emplace(p->security, std::make_tuple(quantity(0), q));
+            auto cast2_ = std::dynamic_pointer_cast<securities_lending_contract>(p);
+            if(cast2_){
+                if(0 == q.amount){
+                    continue;
+                }
+                if(message_->supply.end() != message_->supply.find(cast2_->security)){
+                    std::get<1>( message_->supply.find(cast2_->security)->second ) = q;
+                }else{
+                    message_->supply.emplace(cast2_->security, std::make_tuple(quantity(0), q));
+                }
+            }
         }
     }
     return interval.upper;

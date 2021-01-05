@@ -83,7 +83,7 @@ int main(int argument_count, char *arguments[])
     options_description description_("Allowed options");
     description_.add_options()
         ("help", "produce help message")
-        ("experiment", value<std::string>()->default_value("experiment_5"), "choose experiment")
+        ("experiment", value<std::string>()->default_value("experiment_6"), "choose experiment")
         ("reinvestment", value<double>()->default_value(3.), "reinvestment rate")
         ("stocks", value<unsigned int>()->default_value(1), "set the number of stocks")
         ;
