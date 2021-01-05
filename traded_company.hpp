@@ -69,17 +69,17 @@ public:
                                                     ) override;
 
     ///
-    /// \brief  Number of days in a year. Used to annualise economic quantities
+    /// \brief  Number of days in a year. Used to annualize economic quantities
     ///
     constexpr static size_t day_count  = 252;
 
     ///
-    /// \brief  2% growth rate annually
+    /// \brief  2% growth rate annually, converted to daily
     ///
     double mu = pow(1.02, 1./day_count) - 1;
 
     ///
-    /// \brief  10% volatility annually
+    /// \brief  10% volatility annually, converted to daily
     ///
     double sigma = 0.10 / sqrt(double(day_count));
 

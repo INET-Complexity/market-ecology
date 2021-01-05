@@ -46,6 +46,7 @@ using esl::economics::markets::walras::quote_message;
 
 #include "financial_ratios.hpp"
 
+#include <esl/economics/accounting/standard.hpp>
 
 ///
 /// \brief  Defines an investment fund specific to the market ecology model
@@ -71,6 +72,10 @@ public:
     /// \return
     price net_asset_value(simulation::time_interval ti);
 
+    void reset_wealth(price &net_asset_value_, simulation::time_interval ti);
+
+    void apply_reinvestment(price &net_asset_value_,  simulation::time_interval ti);
+
     ///
     /// \brief  Until which date wealth is reset. Used during the transient
     ///
@@ -90,7 +95,12 @@ public:
         , time_interval, std::seed_seq &seed) = 0;
 
     ///
-    /// \brief  During transient, the value to reset the NAV to
+    ///
+    ///
+    esl::economics::accounting::standard lookup_;
+
+    ///
+    /// \brief  During transient, the value to reset the NAV to every time step
     ///
     std::optional<price> target_net_asset_value;
 
@@ -124,6 +134,16 @@ public:
     ///
     financial_ratios market_data;
 
+    ///
+    /// \brief  Number of days in a year. Used to annualize economic quantities
+    ///
+    constexpr static size_t day_count  = 252;
+
+    ///
+    /// \brief  Discount rate used by the fund
+    ///
+    constexpr static double risk_free_rate = std::pow(1 + 0.02, 1.0/day_count) - 1;
+
 
     // outputs:
 
@@ -143,6 +163,11 @@ public:
         std::stringstream stream_;
         stream_ << "fund " << identifier;
         return stream_.str();
+    }
+
+    [[nodiscard]] virtual std::string name() const override
+    {
+        return describe();
     }
 };
 

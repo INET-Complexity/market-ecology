@@ -28,13 +28,11 @@
 using esl::economics::markets::walras::quote_message;
 
 using esl::law::owner;
-#include <esl/economics/accounting/standard.hpp>
 using namespace esl::economics;
 using namespace esl::economics::accounting;
 using namespace esl::economics::finance;
 
 
-constexpr double risk_free_ =  1.00007858;
 
 fund::fund(const identity<fund> &i, const jurisdiction &j)
     : agent(i)
@@ -42,6 +40,7 @@ fund::fund(const identity<fund> &i, const jurisdiction &j)
     , owner<stock>(i)
     , identifiable_as<fund>()
     , company(i,j)
+    , lookup_(primary_jurisdiction.tender)
     , reset_amount(1.00, currencies::USD)
 {
     output_net_asset_value  = create_output<price>("net_asset_value");
@@ -57,6 +56,7 @@ fund::fund(const identity<fund> &i, const jurisdiction &j)
     };
 
     ESL_REGISTER_CALLBACK(quote_message, -100, invest_, "make investment decisions");
+
     auto process_dividends_ = [this](std::shared_ptr<dividend_announcement_message> m,
                                      simulation::time_interval step,
                                      std::seed_seq &) {
@@ -84,12 +84,12 @@ fund::fund(const identity<fund> &i, const jurisdiction &j)
                 auto [i, b] = owner<cash>::inventory.emplace(usd_, quantity(0));
 
                 /// TODO: this needs to be moved someplace else
-                auto dividend_received_ = uint64_t((stocks_ * dps_.value * risk_free_) /  std::get<0>(sharedetails_));
+                auto dividend_received_ = uint64_t((stocks_ * dps_.value * (1.+risk_free_rate)) /  std::get<0>(sharedetails_));
                 i->second.amount += dividend_received_;
 
                 for(auto [p, q]: owner<securities_lending_contract>::properties.items){
                     if(p->security == stock_){
-                        auto pay_on_short_ = uint64_t((q.amount * dps_.value * risk_free_) / std::get<0>(sharedetails_));
+                        auto pay_on_short_ = uint64_t((q.amount * dps_.value * (1.+risk_free_rate)) / std::get<0>(sharedetails_));
 
                         if(i->second.amount < pay_on_short_){
                             LOG(trace) << "pay " << pay_on_short_ << " to fund short position " << std::endl;
@@ -109,6 +109,17 @@ fund::fund(const identity<fund> &i, const jurisdiction &j)
         return step.upper;
     };
 
+    ESL_REGISTER_CALLBACK(quote_message, 16, [&](std::shared_ptr<quote_message> m, simulation::time_interval ti, std::seed_seq &s){
+
+        for(auto [property_, quote_]: m->proposed) {
+            auto price_ = std::get<price>(quote_.type);
+            lookup_.mark_to_market.erase(property_->identifier);
+            auto i = lookup_.mark_to_market.emplace(property_->identifier, price_);
+        }
+
+            return ti.upper;
+        }, "update prices");
+
     ESL_REGISTER_CALLBACK(dividend_announcement_message, 0, process_dividends_, "process dividend announcement and store dividends")
 }
 
@@ -125,9 +136,72 @@ price valuate(const esl::law::property_map<quantity> &inventory, const standard 
     return value_;
 }
 
+
+///
+/// If we are re-setting wealth in an experiment then
+/// `target_net_asset_value` is set to the value that we reset wealth to.
+/// `target_date` determines the last date on which we reset, for example
+/// in experiments where we always reset it is set to 200 years
+///
+void fund::reset_wealth(price &net_asset_value_, simulation::time_interval ti)
+{
+    // if the target NAV rule does not apply, exit
+    // if we are no longer resetting, exit
+    if(!target_net_asset_value.has_value() || double(target_net_asset_value.value()) <= 0. || ti.lower > target_date){
+        if(! output_net_asset_value->values.empty() ){
+            auto pnl = net_asset_value_ - std::get<1>( output_net_asset_value->values.back() );
+            output_pnl->put(ti.lower, pnl);
+        }
+        return;
+    }
+
+    // bailout as a fraction of assets and liabilities
+    double bailout_ratio = double(target_net_asset_value.value()) / double(net_asset_value_);
+
+    //std::cout << this->describe() << " bailout_ratio " << std::setprecision(5) << bailout_ratio << " (" << target_net_asset_value.value() << " / " << net_asset_value_ << ")" <<std::endl;
+    // bailout monetary amount
+    auto bailout_ = price::approximate((double(target_net_asset_value.value()) - double(net_asset_value_)), currencies::USD);
+    output_pnl->put(ti.lower, -bailout_);
+    for(auto &[p, q]: inventory) {
+        inventory[p].amount = std::uint64_t(inventory[p].amount * bailout_ratio);
+    }
+}
+
+
+void fund::apply_reinvestment(price &net_asset_value_, simulation::time_interval ti)
+{
+    ///
+    /// \brief  This section relates to the reinvestment rate experiments,
+    ///         where we introduce (unseen) retail investors that
+    ///         invest based on the performance of the fund
+    ///
+    if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
+        double returns_ =  double(net_asset_value_) / previous_net_asset_value.value() - 1;
+        double compound_returns_f_ = std::pow(1 + returns_, reinvestment_rate - 1) - 1;
+
+        //std::cout <<"returns: " << returns_ << " compounded " << compound_returns_f_ << std::endl;
+
+        // OLD rule matching papers
+        //int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
+        // new rule
+
+        double change_ = compound_returns_f_ * double(net_asset_value_);
+
+        for(auto &[p, q]: inventory){
+            auto cast_ = std::dynamic_pointer_cast<cash>(p);
+            if(cast_){
+                net_asset_value_ += price::approximate(change_, net_asset_value_.valuation);
+                auto qchange_ = std::max<int64_t>(-((int64_t)inventory[p].amount), int64_t(change_ * 100) );
+                inventory[p].amount += qchange_;
+            }
+        }
+    }
+
+}
+
+
 price fund::net_asset_value(esl::simulation::time_interval ti)
 {
-    standard lookup_(primary_jurisdiction.tender);
     for(auto p: shareholder::prices){
         lookup_.mark_to_market.emplace(p.first->identifier, p.second);
     }
@@ -138,79 +212,31 @@ price fund::net_asset_value(esl::simulation::time_interval ti)
 
     for(auto p: owner<stock>::properties.items){
         if(lookup_.mark_to_market.end() == lookup_.mark_to_market.find(p.first->identifier)){
-            lookup_.mark_to_market.emplace(p.first->identifier, price::approximate(1.00, currencies::USD));
+            lookup_.mark_to_market.emplace(p.first->identifier, price::approximate(100.00, currencies::USD));
         }
     }
 
     auto cash1_ = valuate<cash>(inventory, lookup_);
-
     auto stocks_ = valuate<stock>(inventory, lookup_);
     output_stocks->put(ti.lower, stocks_);
 
-    auto loans1_ = valuate<loan>(inventory, lookup_);
-    auto loans_ = price::approximate(double(loans1_) * risk_free_, loans1_.valuation);
+    auto loans_value_ = valuate<loan>(inventory, lookup_);
+    auto loans_ = price::approximate(double(loans_value_) * (1.+risk_free_rate), loans_value_.valuation);
     output_loans->put(ti.lower, loans_);
 
     auto lending_ = valuate<securities_lending_contract>(inventory, lookup_);
     output_lending->put(ti.lower, lending_);
+    auto cash_ = price::approximate(double(cash1_) * (1.+risk_free_rate), cash1_.valuation);
+    auto net_asset_value_ = cash_ + stocks_ + lending_ + loans_;
 
-    auto net_asset_value_ = cash1_ + stocks_ + lending_ + loans_;
-
-    auto cash_ = price::approximate(double(cash1_) * risk_free_, cash1_.valuation);
     output_cash->put(ti.lower, cash_);
     net_asset_value_ = cash_ + stocks_ + lending_ + loans_;
 
-    ///
-    /// \brief  This section relates to the reinvestment rate experiments,
-    ///         where we introduce (unseen) retail investors that
-    ///         invest based on the performance of the fund
-    ///
-    if(previous_net_asset_value.has_value() && reinvestment_rate != 1.){
-
-
-        double returns_ =  double(net_asset_value_) / previous_net_asset_value.value() - 1;
-        double compound_returns_f_ = std::pow(1 + returns_, reinvestment_rate - 1) - 1;
-
-        // OLD rule matching papers
-        //int64_t change_ = static_cast<int64_t>(round(  (reinvestment_rate -1.) * (double(net_asset_value_) - previous_net_asset_value.value()) ));
-        // new rule
-
-        double change_ =compound_returns_f_ * double(net_asset_value_);
-
-        for(auto &[p, q]: inventory){
-            auto cast_ = std::dynamic_pointer_cast<cash>(p);
-            if(cast_){
-                net_asset_value_ += price::approximate(change_, net_asset_value_.valuation);
-                auto qchange_ = std::max<int64_t>(-((int64_t)inventory[p].amount), change_);
-                inventory[p].amount += qchange_ * 100;
-            }
-        }
+    if(ti.lower > target_date) {
+        apply_reinvestment(net_asset_value_, ti);
     }
 
-    ///
-    /// If we are re-setting wealth in an experiment then
-    /// `target_net_asset_value` is set to the value that we reset wealth to.
-    /// `target_date` determines the last date on which we reset, for example
-    /// in experiments where we always reset it is set to 200 years
-    ///
-    if(target_net_asset_value && double(target_net_asset_value.value())> 0. && ti.lower <= target_date){
-        auto bailout_ = price::approximate((double(target_net_asset_value.value()) - double(net_asset_value_)), currencies::USD);
-        output_pnl->put(ti.lower, -bailout_);
-        for(auto &[p, q]: inventory){
-            auto cast_ = std::dynamic_pointer_cast<cash>(p);
-            if(cast_){
-                net_asset_value_ += bailout_;
-                inventory[p].amount += bailout_.value;
-            }
-        }
-
-    }else if(! output_net_asset_value->values.empty() ){
-        auto pnl = net_asset_value_ - std::get<1>( output_net_asset_value->values.back() );
-        output_pnl->put(ti.lower, pnl);
-    }
-
-
-
+    reset_wealth(net_asset_value_, ti);
     previous_net_asset_value = double(net_asset_value_);
 
     output_net_asset_value->put(ti.lower, net_asset_value_);
