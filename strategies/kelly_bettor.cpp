@@ -61,7 +61,7 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
     LOG(trace) << describe() << " " << identifier << " inventory " <<  inventory << std::endl;
     double update_value_ = 0.;
 
-    if(interval.lower <= 10){
+    if(interval.lower <= 100){
         return interval.lower;
     }
 
@@ -112,8 +112,6 @@ time_point kelly_bettor::invest(std::shared_ptr<walras::quote_message> message, 
                 }
             }
         }
-
-
     }
 
     for(auto [p,q]: owner<stock>::properties.items){

@@ -283,7 +283,7 @@ int experiment_6_( uint64_t sample
             , fv_lev
             , tf_agg
             , tf_lev) );
-        if(results_.size() >= std::thread::hardware_concurrency()){
+        if(results_.size() >= 1){
             for(auto &r: results_){
                 r.wait();
             }
