@@ -182,8 +182,8 @@ const
                 auto m = boost::accumulators::mean(estimates);
                 m = std::max(-0.5, std::min(0.5, std::pow(1. + ease_in_ * m, 252.)-1));
 
-                auto x = adept::value(quoted_price_ * variable_);
-                auto update_value_ = ease_in_ * ((x / double(past_price)) - 1 + dividend_rate/ double(x));
+                double x = quoted_price_ * adept::value(variable_);
+                auto update_value_ = ease_in_ * ((x / double(past_price)) - 1 + dividend_rate/ x);
 
 
                 const_cast<decltype(estimates) &>( estimates)(update_value_);
