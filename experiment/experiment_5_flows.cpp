@@ -368,12 +368,13 @@ int experiment_5(double reinvestment_rate, size_t threads)
             results_.emplace_back(pool_.enqueue_task(experiment_5_task, progress_, 1, c[0], c[1], c[2], reinvestment_rate));
             progress_ += 1;
 
-            if (results_.size() >= 1) {
+            if (results_.size() >= std::thread::hardware_concurrency()){
                 combinations2_.clear();
                 for (auto &r: results_) {
                     r.wait();
                     combinations2_.push_back(r.get());
                 }
+
                 results_.clear();
                 //combinations_ = combinations2_;
             }
