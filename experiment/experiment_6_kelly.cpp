@@ -152,10 +152,10 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
                                 + std::to_string(fv_agg) + "_"
                                 + std::to_string(fv_lev) + "_"
                                 + std::to_string(tf_agg) + "_"
-                                + std::to_string(tf_lev)
+                                + std::to_string(tf_lev) + "_"
+                                  + std::to_string(nt) + "_"
+                                  + std::to_string(fv)
                                 + "/run_"
-                                + std::to_string(nt) + "_"
-                                + std::to_string(fv) + "_"
                                 + std::to_string(tf) + "_sample_"
                                 + std::to_string(sample) +"/" ;
 

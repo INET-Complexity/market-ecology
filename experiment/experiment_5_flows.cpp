@@ -178,12 +178,12 @@ std::vector<double> experiment_5_task(double ntv, double dpv, std::uint64_t samp
     property_map<markets::quote> traded_assets_;
     property_map<size_t> shares_outstanding_;
 
-    const std::string prefix_ = "output/experiment5_" + std::to_string(reinvestment_rate) + "/run_"
+    const std::string prefix_ = "output/experiment5_" + std::to_string(ntv) + "_"
+                                + std::to_string(dpv) + "_"
+                                + std::to_string(reinvestment_rate) + "/run_"
                                 + std::to_string(nt) + "_"
                                 + std::to_string(fv) + "_"
                                 + std::to_string(tf) + "_"
-                                + std::to_string(ntv) + "_"
-                                + std::to_string(dpv) + "_"
                                   + "_sample_" + std::to_string(sample) +"/";
 
     if(std::filesystem::exists(prefix_)){
