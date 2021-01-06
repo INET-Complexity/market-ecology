@@ -181,8 +181,10 @@ std::vector<double> experiment_5_task(double ntv, double dpv, std::uint64_t samp
     const std::string prefix_ = "output/experiment5_" + std::to_string(reinvestment_rate) + "/run_"
                                 + std::to_string(nt) + "_"
                                 + std::to_string(fv) + "_"
-                                + std::to_string(tf)
-                                + "_sample_" + std::to_string(sample) +"/";
+                                + std::to_string(tf) + "_"
+                                + std::to_string(ntv) + "_"
+                                + std::to_string(dpv) + "_"
+                                  + "_sample_" + std::to_string(sample) +"/";
 
     if(std::filesystem::exists(prefix_)){
         return {nt, fv, tf};
@@ -335,7 +337,7 @@ std::vector<double> experiment_5_task(double ntv, double dpv, std::uint64_t samp
 ///
 /// \param sample
 /// \return
-int experiment_5(double ntv, double dpv, double reinvestment_rate, size_t threads)
+int experiment_5(double ntv, double dpv, double reinvestment_rate, std::size_t threads)
 {
     size_t progress_ = 0;
     uint64_t subsamples_ = 16;

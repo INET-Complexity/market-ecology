@@ -85,6 +85,8 @@ int main(int argument_count, char *arguments[])
         ("help", "produce help message")
         ("experiment", value<std::string>()->default_value("experiment_6"), "choose experiment")
         ("reinvestment", value<double>()->default_value(3.), "reinvestment rate")
+        ("ntv", value<double>()->default_value(0.2), "noise trader volatility")
+        ("dpv", value<double>()->default_value(0.10), "dividend process volatility")
         ("stocks", value<unsigned int>()->default_value(1), "set the number of stocks")
         ;
 
@@ -117,13 +119,13 @@ int main(int argument_count, char *arguments[])
 
     }else if("experiment_5" == experiment_){
         double reinvestment_rate = arguments_["reinvestment"].as<double>();
-        experiment_5(reinvestment_rate);
+        experiment_5(arguments_["ntv"].as<double>(), arguments_["dpv"].as<double>(), reinvestment_rate);
 
     }else if("experiment_3_best" == experiment_){
         experiment_3_best(32);
 
     }else if("experiment_6" == experiment_){
-        experiment_6_best();
+        experiment_6_best(arguments_["ntv"].as<double>(), arguments_["dpv"].as<double>());
 
     }else if("volatility_illustration" == experiment_){
         volatility_illustration(1);
