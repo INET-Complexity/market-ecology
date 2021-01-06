@@ -69,6 +69,63 @@ using std::make_tuple;
 #include <strategies/kelly_bettor.hpp>
 using namespace boost::program_options;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct me_model6
+    : public model
+{
+    using model::model;
+
+    constexpr static time_point end_time = 99999999999;
+
+    time_point step(time_interval step) override
+    {
+        auto ps_ =  std::dynamic_pointer_cast<price_setter>(agents.local_agents_[identity<agent>{1}]);
+
+        for(unsigned long i: {2ul,3ul,4ul,5ul}){
+            auto f = std::dynamic_pointer_cast<fund>(agents.local_agents_[identity<agent>{i}]);
+            if(step.lower < f->target_date){
+                continue;
+            }
+            if(!f->output_net_asset_value->values.empty() && std::get<1>(f->output_net_asset_value->values.back()).value < 0){
+                return end_time;
+            }
+        }
+
+        auto result_ = model::step(step);
+        return result_;
+    }
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, double fv, double tf
 
     , double nt_agg, double nt_lev
@@ -77,7 +134,7 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 {
     unsigned int stocks_count               = assets;
     environment e;
-    model model_(e, parametrization(0, 0, 101 * 252));
+    me_model6 model_(e, parametrization(0, 0, 101 * 252));
 
     std::dynamic_pointer_cast<simulation::parameter::constant<std::uint64_t>>(model_.parameters.values["sample"])->choice = sample;
 
@@ -283,7 +340,7 @@ int experiment_6_( uint64_t sample
             , fv_lev
             , tf_agg
             , tf_lev) );
-        if(results_.size() >= 1){
+        if(results_.size() >=        1){//       std::thread::hardware_concurrency()){
             for(auto &r: results_){
                 r.wait();
             }
