@@ -166,7 +166,7 @@ struct me_model5
 #include <boost/program_options.hpp>
 using namespace boost::program_options;
 
-std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets, double nt, double fv, double tf, double reinvestment_rate = 1.0)
+std::vector<double> experiment_5_task(double ntv, double dpv, std::uint64_t sample, std::uint64_t assets, double nt, double fv, double tf, double reinvestment_rate = 1.0)
 {
     unsigned int stocks_count               = assets;
     environment e;
@@ -190,6 +190,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     std::filesystem::create_directories(prefix_);
     for(size_t a = 0; a < stocks_count; ++a){
         auto traded_company_ = model_.template create<traded_company>(model_.world, jurisdictions::US, sample);
+        traded_company_->sigma = dpv / sqrt(double(traded_company_->day_count));
         traded_company_->outputs["dividend_per_share"]->streams.push_back(make_shared<data::file>(std::to_string(a) + "_dividend.txt", prefix_));
         auto main_issue_ = share_class();
         size_t main_issue_amount_ = 3 * 1'0'000u;
@@ -240,8 +241,9 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     mr_->target_net_asset_value.emplace(target_nav_nt_);
     mr_->aggression = nt_agg;
     mr_->maximum_leverage = nt_lev;
-    mr_->target_date = 100;
+    mr_->target_date = 252;
     mr_->reinvestment_rate = reinvestment_rate;
+    mr_->sigma_ = ntv * std::sqrt(1./252);
     participants_.push_back(mr_);
     set_outputs(mr_);
 
@@ -249,7 +251,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     fv_->target_net_asset_value.emplace(target_nav_fv_);
     fv_->aggression = fv_agg;
     fv_->maximum_leverage = fv_lev;
-    fv_->target_date = 100;
+    fv_->target_date = 252;
     fv_->reinvestment_rate = reinvestment_rate;
     participants_.push_back(fv_);
     set_outputs(fv_);
@@ -258,7 +260,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     tf_->target_net_asset_value.emplace(target_nav_tf_);
     tf_->aggression = tf_agg;
     tf_->maximum_leverage = tf_lev;
-    tf_->target_date = 100;
+    tf_->target_date = 252;
     tf_->reinvestment_rate = reinvestment_rate;
     participants_.push_back(tf_);
     set_outputs(tf_);
@@ -268,8 +270,6 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
     }
 
     double large_precision_ = 1'000'000'000.00;
-
-
 
     auto cash_ = std::make_shared<cash>(USD);
     quantity cash_amounts_[3] =  {
@@ -335,7 +335,7 @@ std::vector<double> experiment_5_task(std::uint64_t sample, std::uint64_t assets
 ///
 /// \param sample
 /// \return
-int experiment_5(double reinvestment_rate, size_t threads)
+int experiment_5(double ntv, double dpv, double reinvestment_rate, size_t threads)
 {
     size_t progress_ = 0;
     uint64_t subsamples_ = 16;
@@ -365,7 +365,7 @@ int experiment_5(double reinvestment_rate, size_t threads)
         std::cout << "starting " << combinations_.size() << " tasks" << std::endl;
 
         for (auto c: combinations_) {
-            results_.emplace_back(pool_.enqueue_task(experiment_5_task, progress_, 1, c[0], c[1], c[2], reinvestment_rate));
+            results_.emplace_back(pool_.enqueue_task(experiment_5_task, ntv, dpv, progress_, 1, c[0], c[1], c[2], reinvestment_rate));
             progress_ += 1;
 
             if (results_.size() >= std::thread::hardware_concurrency()){

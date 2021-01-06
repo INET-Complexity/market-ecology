@@ -130,7 +130,10 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 
     , double nt_agg, double nt_lev
     , double fv_agg, double fv_lev
-    , double tf_agg, double tf_lev)
+    , double tf_agg, double tf_lev
+
+    , double ntv, double dpv
+                      )
 {
     unsigned int stocks_count               = assets;
     environment e;
@@ -161,12 +164,11 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     }
 
     std::cout << "starting experiment: " << prefix_ << std::endl;
-
     std::filesystem::create_directories(prefix_);
 
     for(size_t a = 0; a < stocks_count; ++a){
         auto traded_company_ = model_.template create<traded_company>(model_.world, jurisdictions::US);
-
+        traded_company_->sigma = dpv / sqrt(double(traded_company_->day_count));
         traded_company_->outputs["dividend_per_share"]->streams.push_back(make_shared<data::file>(std::to_string(a) + "_dividend.txt", prefix_));
 
         auto main_issue_ = share_class();
@@ -220,6 +222,8 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     mr_->target_net_asset_value.emplace(target_nav_nt_);
     mr_->aggression = nt_agg;
     mr_->maximum_leverage = nt_lev;
+    mr_->sigma_ = ntv * std::sqrt(1./252);
+
     participants_.push_back(mr_);
     set_outputs(mr_);
 
@@ -313,6 +317,7 @@ int experiment_6_( uint64_t sample
                  , double fv_lev
                  , double tf_agg
                  , double tf_lev
+                  , double ntv, double dpv
                  , size_t subsamples = 16
                  )
 {
@@ -339,7 +344,8 @@ int experiment_6_( uint64_t sample
             , fv_agg
             , fv_lev
             , tf_agg
-            , tf_lev) );
+            , tf_lev
+                                                 , ntv, dpv) );
         if(results_.size() >=  std::thread::hardware_concurrency()){//
             for(auto &r: results_){
                 r.wait();
@@ -354,7 +360,7 @@ int experiment_6_( uint64_t sample
 }
 
 
-int experiment_6_best(unsigned int precision)
+int experiment_6_best(double ntv, double dpv, unsigned int precision)
 {
     for(size_t s = 0; s < 8; ++s){
         experiment_6_(s
@@ -363,7 +369,7 @@ int experiment_6_best(unsigned int precision)
             , 10.
             , 8.
             , 4.
-            , 0.99
+            , 0.99, ntv, dpv
             , precision);
     }
     return 0;
