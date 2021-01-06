@@ -56,6 +56,8 @@ public:
 
     size_t seed;
 
+    double sigma_   = 0.2 * std::sqrt(1./252);
+
     time_point invest(std::shared_ptr<quote_message> message,
                       time_interval interval, std::seed_seq &seed) override;
 

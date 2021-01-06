@@ -62,7 +62,7 @@ time_point mean_reverting_noise_trader::invest(
 
         std::normal_distribution<double> distribution_(0.0, 1.0);
 
-        double sigma_   = 0.2 * std::sqrt(1./252);
+
         double rho_     = 0.00045832561;//0.00045832561;
         double mu_      = 1.0;
 
