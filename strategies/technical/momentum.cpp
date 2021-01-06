@@ -65,6 +65,12 @@ time_point momentum::invest(shared_ptr<quote_message> message, time_interval int
     time_duration window_ = window;
     auto nav_ = net_asset_value(interval);
     if(nav_.value <= 0){
+        /*for(auto &[p,q]: inventory) {
+            auto cast_ = std::dynamic_pointer_cast<cash>(p);
+            if(cast_) {
+                q.amount += (-nav_.value) + 1000000;
+            }
+        }*/
         return interval.upper;
     }
 

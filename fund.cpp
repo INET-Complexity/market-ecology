@@ -161,10 +161,48 @@ void fund::reset_wealth(price &net_asset_value_, simulation::time_interval ti)
     //std::cout << this->describe() << " bailout_ratio " << std::setprecision(5) << bailout_ratio << " (" << target_net_asset_value.value() << " / " << net_asset_value_ << ")" <<std::endl;
     // bailout monetary amount
     auto bailout_ = price::approximate((double(target_net_asset_value.value()) - double(net_asset_value_)), currencies::USD);
+    auto remainder_ = bailout_.value;
+
     output_pnl->put(ti.lower, -bailout_);
     for(auto &[p, q]: inventory) {
-        inventory[p].amount = std::uint64_t(inventory[p].amount * bailout_ratio);
+        auto cast_ = std::dynamic_pointer_cast<cash>(p);
+        if(cast_){
+            if(remainder_ < 0){
+                auto dec = std::min<std::uint64_t>(inventory[p].amount, -remainder_);
+                inventory[p].amount -= dec;//std::uint64_t(inventory[p].amount * bailout_ratio);
+                remainder_ += dec;
+            }else if(remainder_ > 0){
+                inventory[p].amount += remainder_;//std::uint64_t(inventory[p].amount * bailout_ratio);
+                remainder_ = 0;
+            }
+        }
     }
+
+    if(remainder_){
+        for(auto &[p, q]: inventory) {
+            auto cast_ = std::dynamic_pointer_cast<stock>(p);
+
+            if(cast_){
+
+                auto i = lookup_.mark_to_market.find(p->identifier);
+                if(lookup_.mark_to_market.end() == i){
+                    continue;
+                }
+
+                auto change_ = remainder_ / std::get<price>(i->second.type).value;
+
+                if(change_ < 0){
+                    auto dec = std::min<std::uint64_t>(inventory[p].amount, -change_);
+                    inventory[p].amount -= dec;//std::uint64_t(inventory[p].amount * bailout_ratio);
+                    remainder_ += change_ * std::get<price>(i->second.type).value;
+                }else if(change_ > 0){
+                    inventory[p].amount += change_;//std::uint64_t(inventory[p].amount * bailout_ratio);
+                    remainder_ = 0;
+                }
+            }
+        }
+    }
+
 }
 
 
