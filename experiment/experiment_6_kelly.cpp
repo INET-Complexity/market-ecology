@@ -216,7 +216,7 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 
     auto mr_ = model_.template create<mean_reverting_noise_trader>();
     mr_->seed = sample;
-    mr_->target_date = 2*252;
+    mr_->target_date = 252;
     mr_->target_net_asset_value.emplace(target_nav_nt_);
     mr_->aggression = nt_agg;
     mr_->maximum_leverage = nt_lev;
@@ -225,7 +225,7 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 
     auto fv_ = model_.template create<dividend_discount>();
     fv_->target_net_asset_value.emplace(target_nav_fv_);
-    fv_->target_date = 2*252;
+    fv_->target_date = 252;
     fv_->aggression = fv_agg;
     fv_->maximum_leverage = fv_lev;
     participants_.push_back(fv_);
@@ -233,7 +233,7 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 
     auto tf_ = model_.template create<momentum>();
     tf_->target_net_asset_value.emplace(target_nav_tf_);
-    tf_->target_date = 2*252;
+    tf_->target_date = 252;
     tf_->aggression = tf_agg;
     tf_->maximum_leverage = tf_lev;
     participants_.push_back(tf_);
@@ -242,7 +242,7 @@ int experiment_6_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 
     auto kb_ = model_.template create<kelly_bettor>();
     kb_->target_net_asset_value.emplace(target_nav_kb_);
-    kb_->target_date = 2*252;
+    kb_->target_date = 252;
     kb_->aggression = 1.0;
     kb_->maximum_leverage = 10.0;
     participants_.push_back(kb_);
@@ -340,7 +340,7 @@ int experiment_6_( uint64_t sample
             , fv_lev
             , tf_agg
             , tf_lev) );
-        if(results_.size() >=        1){//       std::thread::hardware_concurrency()){
+        if(results_.size() >=  std::thread::hardware_concurrency()){//
             for(auto &r: results_){
                 r.wait();
             }
