@@ -168,6 +168,9 @@ SET(SOURCE_FILES main.cpp
         experiment/experiment_1_population_fluctuations.cpp
         experiment/experiment_1_population_fluctuations.hpp
 
+        experiment/experiment_2_statistics.cpp
+        experiment/experiment_2_statistics.hpp
+
         experiment/experiment_3_simplex.cpp
         experiment/experiment_3_simplex.hpp
 

@@ -1,10 +1,10 @@
-/// \file   experiment_1_population_fluctuations.hpp
+/// \file   experiment_2_statistics.hpp
 ///
 /// \brief
 ///
 /// \authors    maarten
-/// \date       2020-12-05
-/// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
+/// \date       2021-01-15
+/// \copyright  Copyright 2017-2021 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,10 +22,9 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef MARKET_ECOLOGY_EXPERIMENT_1_POPULATION_FLUCTUATIONS_HPP
-#define MARKET_ECOLOGY_EXPERIMENT_1_POPULATION_FLUCTUATIONS_HPP
+#ifndef MARKET_ECOLOGY_EXPERIMENT_2_STATISTICS_HPP
+#define MARKET_ECOLOGY_EXPERIMENT_2_STATISTICS_HPP
 
+int experiment_2( unsigned int stocks_count = 1); // todo: rename
 
-int volatility_illustration( unsigned int stocks_count = 1); // todo: rename
-
-#endif  // MARKET_ECOLOGY_EXPERIMENT_1_POPULATION_FLUCTUATIONS_HPP
+#endif  // MARKET_ECOLOGY_EXPERIMENT_2_STATISTICS_HPP
