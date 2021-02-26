@@ -16,6 +16,6 @@ int experiment_3();
 ///
 /// \param precision
 /// \return
-int experiment_3_best(unsigned int precision = 64);
+int experiment_3_best(unsigned int precision = 32);
 
 #endif //ME_EXPERIMENT_3_GRID_HPP

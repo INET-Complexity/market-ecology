@@ -85,7 +85,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     property_map<markets::quote> traded_assets_;
     property_map<size_t> shares_outstanding_;
 
-    const std::string prefix_ = std::string("output/experiment3_alternative1_")
+    const std::string prefix_ = std::string("output/experiment3_")
                                 + std::to_string(nt_agg) + "_"
                                 + std::to_string(nt_lev) + "_"
                                 + std::to_string(fv_agg) + "_"
@@ -138,7 +138,6 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     auto set_outputs = [&](shared_ptr<fund> f){
         auto repr_ = f->identifier.representation();
         std::replace(repr_.begin(), repr_.end(), '"', '_');
-
         //f->outputs["signal"]->streams.push_back(make_shared<data::file>(repr_ + "_signal.txt", prefix_));
         f->outputs["net_asset_value"]->streams.push_back(make_shared<data::file>(repr_ + "_net_asset_value.txt", prefix_));
         f->outputs["pnl"]->streams.push_back(make_shared<data::file>(repr_ + "_pnl.txt", prefix_));
@@ -226,8 +225,8 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 ///
 /// \param sample
 /// \return
-int experiment_3_(uint64_t sample, double nt_agg, double nt_lev, double fv_agg, double fv_lev, double tf_agg, double tf_lev
-                 , size_t subsamples = 64 )
+int experiment_3_parallel(uint64_t sample, double nt_agg, double nt_lev, double fv_agg, double fv_lev, double tf_agg, double tf_lev
+                 , size_t subsamples = 32)
 {
     uint64_t subsamples_ = subsamples; // 64
     esl::computation::thread_pool pool_;
@@ -248,7 +247,7 @@ int experiment_3_(uint64_t sample, double nt_agg, double nt_lev, double fv_agg, 
                                                  , fv_lev
                                                  , tf_agg
                                                  , tf_lev) );
-        if(results_.size() >= 8){
+        if(results_.size() >= 512){
             for(auto &r: results_){
                 r.wait();
             }
@@ -269,12 +268,8 @@ int experiment_3()
                     for(double tf_agg: {1.0, 0.5, 2.0, 3.0, 4.0}){
                         for(double tf_lev: {1.0, 0.8,  1.5, 2.0}){
                             for(size_t s = 0; s < 2; ++s){
-                                experiment_3_(s , nt_agg
-                                    , nt_lev
-                                    , fv_agg
-                                    , fv_lev
-                                    , tf_agg
-                                    ,  tf_lev);
+                                experiment_3_parallel(s, nt_agg, nt_lev, fv_agg,
+                                                      fv_lev, tf_agg, tf_lev);
                             }
                         }
                     }
@@ -291,14 +286,7 @@ int experiment_3()
 int experiment_3_best(unsigned int precision)
 {
     for(size_t s = 0; s < 8; ++s){
-        experiment_3_(s
-            , 5.
-            , 1.
-            , 10.
-            , 8.
-            , 4.
-            , 0.8
-            , precision);
+        experiment_3_parallel(s, 5., 1., 10., 8., 4., 1.0, precision);
     }
     return 0;
 }
