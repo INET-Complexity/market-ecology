@@ -72,7 +72,6 @@ traded_company::traded_company( const identity<traded_company> &i
     constexpr double dt = 1.; // discretization step
 
     for(size_t t = 0; t < end_point; ++t){
-
         std::normal_distribution<double> standard_normal_(0,1);
         auto z = standard_normal_(generator_);
 

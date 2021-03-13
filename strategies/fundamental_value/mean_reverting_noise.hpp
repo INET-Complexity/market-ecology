@@ -48,7 +48,10 @@ class mean_reverting_noise_trader
 : public fund
 {
 public:
-    explicit mean_reverting_noise_trader(const identity<fund> &i, const jurisdiction &j = law::jurisdictions::US, size_t seed = 0);
+    explicit mean_reverting_noise_trader( const identity<fund> &i
+                                        , const jurisdiction &j = law::jurisdictions::US
+                                        , size_t seed = 0
+                                         );
 
     law::property_map<std::vector<nominal_interest_rate>> dividend_yields;
 

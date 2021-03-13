@@ -153,8 +153,8 @@ SET(SOURCE_FILES main.cpp
         strategies/fundamental_value/dividend_discount.hpp
         strategies/fundamental_value/dividend_discount.cpp
 
-        strategies/technical/momentum.hpp
-        strategies/technical/momentum.cpp
+        strategies/technical/trend_follower.hpp
+        strategies/technical/trend_follower.cpp
 
         strategies/kelly_bettor.hpp
         strategies/kelly_bettor.cpp

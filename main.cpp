@@ -43,7 +43,7 @@ using std::dynamic_pointer_cast;
 #include "strategies/constant_demand.hpp"
 #include "strategies/fundamental_value/dividend_discount.hpp"
 #include "strategies/fundamental_value/mean_reverting_noise.hpp"
-#include "strategies/technical/momentum.hpp"
+#include "strategies/technical/trend_follower.hpp"
 #include <experiment/experiment_1_population_fluctuations.hpp>
 #include <experiment/experiment_2_statistics.hpp>
 #include <experiment/experiment_3_simplex.hpp>
@@ -68,6 +68,8 @@ using namespace boost::program_options;
 /// \return
 int main(int argument_count, char *arguments[])
 {
+
+
     // on windows hosts, prefer to run simulations with below normal priority
     // because otherwise the host may become difficult to interact with
 #if defined(WIN32) || defined(_WIN32) || (defined(__WIN32) && !defined(__CYGWIN__))
@@ -84,7 +86,7 @@ int main(int argument_count, char *arguments[])
     options_description description_("Allowed options");
     description_.add_options()
         ("help", "produce help message")
-        ("experiment", value<std::string>()->default_value("experiment_2"), "choose experiment")
+        ("experiment", value<std::string>()->default_value("experiment_3"), "choose experiment")
         ("reinvestment", value<double>()->default_value(3.), "reinvestment rate")
         ("ntv", value<double>()->default_value(0.2), "noise trader volatility")
         ("dpv", value<double>()->default_value(0.10), "dividend process volatility")
@@ -117,14 +119,15 @@ int main(int argument_count, char *arguments[])
     }else if("experiment_2" == experiment_) {
         experiment_2();
     } else if("experiment_3" == experiment_) {
-        experiment_3();
+        experiment_3_best(16);
+    }else if("experiment_3_best" == experiment_){
+        experiment_3_best(32);
+
     }else if("experiment_4" == experiment_){
         experiment_4();
     }else if("experiment_5" == experiment_){
         double reinvestment_rate = arguments_["reinvestment"].as<double>();
         experiment_5(arguments_["ntv"].as<double>(), arguments_["dpv"].as<double>(), reinvestment_rate);
-    }else if("experiment_3_best" == experiment_){
-        experiment_3_best(32);
 
     }else if("experiment_6" == experiment_){
         experiment_6_best(arguments_["ntv"].as<double>(), arguments_["dpv"].as<double>());

@@ -44,10 +44,10 @@ using namespace esl::economics::currencies;
 using namespace esl::simulation;
 using namespace esl::simulation::parameter;
 
-#include "strategies/fundamental_value/mean_reverting_noise.hpp"
-#include "strategies/fundamental_value/dividend_discount.hpp"
-#include "strategies/technical/momentum.hpp"
 #include "strategies/constant_demand.hpp"
+#include "strategies/fundamental_value/dividend_discount.hpp"
+#include "strategies/fundamental_value/mean_reverting_noise.hpp"
+#include "strategies/technical/trend_follower.hpp"
 #include "traded_company.hpp"
 
 #include <memory>
@@ -292,7 +292,7 @@ int experiment_2( unsigned int stocks_count )
     }
 
     for(size_t i = 0; i < trend_followers; ++i) {
-        auto tf_ = model_.template create<momentum>(model_.world,esl::law::jurisdictions::US);
+        auto tf_ = model_.template create<trend_follower>(model_.world,esl::law::jurisdictions::US);
         tf_->target_net_asset_value.emplace(target_nav_tf_);
         tf_->target_date = target_date_;
         tf_->aggression = 1.5; // 1.5

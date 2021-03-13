@@ -86,7 +86,7 @@ public:
     ///
     /// \brief  autocorrelation lag
     ///
-    constexpr static size_t tau        = 1;
+    constexpr static size_t tau        = 21;
 
     ///
     /// \brief  autocorrelation factor

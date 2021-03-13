@@ -58,10 +58,10 @@ using std::make_tuple;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../strategies/fundamental_value/mean_reverting_noise.hpp"
-#include "../strategies/fundamental_value/dividend_discount.hpp"
-#include "../strategies/technical/momentum.hpp"
 #include "../strategies/constant_demand.hpp"
+#include "../strategies/fundamental_value/dividend_discount.hpp"
+#include "../strategies/fundamental_value/mean_reverting_noise.hpp"
+#include "../strategies/technical/trend_follower.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -76,7 +76,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 {
     unsigned int stocks_count               = assets;
     environment e;
-    model model_(e, parametrization(0, 0, 11*252));
+    model model_(e, parametrization(0, 0, 31*252));
 
     std::dynamic_pointer_cast<simulation::parameter::constant<std::uint64_t>>(model_.parameters.values["sample"])->choice = sample;
 
@@ -138,9 +138,16 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     auto set_outputs = [&](shared_ptr<fund> f){
         auto repr_ = f->identifier.representation();
         std::replace(repr_.begin(), repr_.end(), '"', '_');
-        //f->outputs["signal"]->streams.push_back(make_shared<data::file>(repr_ + "_signal.txt", prefix_));
         f->outputs["net_asset_value"]->streams.push_back(make_shared<data::file>(repr_ + "_net_asset_value.txt", prefix_));
         f->outputs["pnl"]->streams.push_back(make_shared<data::file>(repr_ + "_pnl.txt", prefix_));
+
+        f->outputs["signal"]->streams.push_back(make_shared<data::file>(repr_ + "_signal.txt", prefix_));
+
+        f->outputs["cash"]->streams.push_back(make_shared<data::file>(repr_ + "_cash.txt", prefix_));
+        f->outputs["stocks"]->streams.push_back(make_shared<data::file>(repr_ + "_stocks.txt", prefix_));
+        f->outputs["loans"]->streams.push_back(make_shared<data::file>(repr_ + "_loans.txt", prefix_));
+        f->outputs["lending"]->streams.push_back(make_shared<data::file>(repr_ + "_lending.txt", prefix_));
+
     };
 
     auto target_nav_nt_ = price::approximate(nt * 2'000'000.00, USD);
@@ -164,7 +171,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     participants_.push_back(fv_);
     set_outputs(fv_);
 
-    auto tf_ = model_.template create<momentum>();
+    auto tf_ = model_.template create<trend_follower>();
     tf_->target_net_asset_value.emplace(target_nav_tf_);
     tf_->aggression = tf_agg;
     tf_->maximum_leverage = tf_lev;
@@ -247,7 +254,7 @@ int experiment_3_parallel(uint64_t sample, double nt_agg, double nt_lev, double 
                                                  , fv_lev
                                                  , tf_agg
                                                  , tf_lev) );
-        if(results_.size() >= 512){
+        if(results_.size() >= 559){
             for(auto &r: results_){
                 r.wait();
             }
@@ -286,7 +293,7 @@ int experiment_3()
 int experiment_3_best(unsigned int precision)
 {
     for(size_t s = 0; s < 8; ++s){
-        experiment_3_parallel(s, 5., 1., 10., 8., 4., 1.0, precision);
+        experiment_3_parallel(s, 1., 2., 1., 2., 1., 2.0, precision);
     }
     return 0;
 }
