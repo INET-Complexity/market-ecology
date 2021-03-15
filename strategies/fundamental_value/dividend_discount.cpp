@@ -94,6 +94,8 @@ time_point dividend_discount::invest(
         }
     }
 
+
+    LOG(trace) << "create_message<dividend_discount_ddsf> with "  << valuations_.size() << " valuations: " << valuations_ << std::endl;
     auto message_ = this->template create_message<dividend_discount_ddsf>(
         message->sender, interval.lower, (*this), message->sender,
         interval.lower, interval.lower, nav_, valuations_);

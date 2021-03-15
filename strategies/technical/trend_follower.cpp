@@ -116,6 +116,10 @@ time_point trend_follower::invest(shared_ptr<quote_message> message, time_interv
     for(const auto &t : trends_) {
         valuations_.emplace(get<0>(t),  get<3>(t));
     }
+
+
+
+    LOG(trace) << "create_message<momentum_ddsf> with "  << valuations_.size() << " valuations: " << valuations_ << std::endl;
     auto message_ = this->template create_message<momentum_ddsf>(
         message->sender, interval.lower, (*this), message->sender,
         interval.lower, interval.lower, nav_, valuations_);

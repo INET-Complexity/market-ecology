@@ -45,7 +45,7 @@ traded_company::traded_company( const identity<traded_company> &i
                               , const jurisdiction &j
                               , uint64_t sample
                               , time_point end_point
-                               )
+                              )
 : agent(i)
 , owner<cash>(i)
 , owner<stock>(i)

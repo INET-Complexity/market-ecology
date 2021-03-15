@@ -29,15 +29,18 @@ time_point mean_reverting_noise_trader::invest(
         time_interval interval, std::seed_seq &seed)
 {
     if(message->received < interval.lower){
+        LOG(trace) << "blocking because I received stale messages" << std::endl;
         return interval.lower;
     }
 
     if(this->target_net_asset_value.has_value() && double(target_net_asset_value.value()) <= 1.){
+        LOG(trace) << "blocking because I have zero wealth" << std::endl;
         return interval.upper;
     }
 
     auto nav_ = net_asset_value(interval);
     if(nav_.value <= 0){
+        LOG(trace) << "blocking because I have gone bankrupt" << std::endl;
         return interval.upper;
     }
 
@@ -132,7 +135,7 @@ time_point mean_reverting_noise_trader::invest(
         }
     }
 
-    //LOG(trace) << "create_message<dividend_discount_ddsf> with "  << valuations_.size() << " valuations: " << valuations_ << std::endl;
+    LOG(trace) << "create_message<mean_reverting_noise_ddsf> with "  << valuations_.size() << " valuations: " << valuations_ << std::endl;
     auto message_ = this->template create_message<mean_reverting_noise_ddsf>(
             message->sender, interval.lower, (*this), message->sender,
             interval.lower, interval.lower, nav_, valuations_);
