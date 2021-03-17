@@ -23,7 +23,7 @@
 #ifndef ME_FUND_HPP
 #define ME_FUND_HPP
 
-#include <esl/economics/finance/company.hpp>
+#include <esl/economics/company.hpp>
 using namespace esl;
 using namespace esl::economics;
 using esl::economics::company;
