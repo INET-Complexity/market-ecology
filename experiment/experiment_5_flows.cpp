@@ -59,10 +59,10 @@ using std::make_tuple;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../strategies/fundamental_value/mean_reverting_noise.hpp"
-#include "../strategies/fundamental_value/dividend_discount.hpp"
-#include "../strategies/technical/momentum.hpp"
 #include "../strategies/constant_demand.hpp"
+#include "../strategies/fundamental_value/dividend_discount.hpp"
+#include "../strategies/fundamental_value/mean_reverting_noise.hpp"
+#include "../strategies/technical/trend_follower.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -258,7 +258,7 @@ std::vector<double> experiment_5_task(double ntv, double dpv, std::uint64_t samp
     participants_.push_back(fv_);
     set_outputs(fv_);
 
-    auto tf_ = model_.template create<momentum>();
+    auto tf_ = model_.template create<trend_follower>();
     tf_->target_net_asset_value.emplace(target_nav_tf_);
     tf_->aggression = tf_agg;
     tf_->maximum_leverage = tf_lev;

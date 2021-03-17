@@ -73,7 +73,7 @@ fund::fund(const identity<fund> &i, const jurisdiction &j)
                 market_data.shares_outstanding[stock_] = std::get<0>(sharedetails_);
 
                 uint64_t stocks_ = 0;
-                for(auto s: owner<stock>::inventory){
+                for(const auto& s: owner<stock>::inventory){
                     if(s.first->identifier == stock_){
                         stocks_ += s.second.amount;
                     }

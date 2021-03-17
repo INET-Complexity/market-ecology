@@ -44,13 +44,12 @@ using namespace esl;
 #include "../../fund.hpp"
 
 
-class momentum
-: public fund
+class trend_follower : public fund
 {
 public:
-    explicit momentum( const esl::identity<fund> &i
+    explicit trend_follower( const esl::identity<fund> &i
                      , const jurisdiction &j = esl::law::jurisdictions::US
-                     , size_t window = 1); 
+                     , size_t window = 21);
     ///
     /// theta - 1
     ///
@@ -75,7 +74,7 @@ public:
     /// \return 
     [[nodiscard]] std::string describe() const override
     {
-        return "momentum trader";
+        return "trend_follower trader";
     }
 };
 
