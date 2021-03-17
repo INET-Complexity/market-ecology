@@ -27,7 +27,7 @@
 
 #include <unordered_map>
 
-#include <esl/economics/finance/company.hpp>
+#include <esl/economics/company.hpp>
 using namespace esl;
 
 ///

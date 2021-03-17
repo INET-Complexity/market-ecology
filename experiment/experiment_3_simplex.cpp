@@ -405,7 +405,7 @@ int experiment_3_parallel(uint64_t sample, double nt_agg, double nt_lev, double 
                                                  , fv_lev
                                                  , tf_agg
                                                  , tf_lev) );
-        if(results_.size() >= 16){
+        if(results_.size() >= 512){
             for(auto &r: results_){
                 r.wait();
             }

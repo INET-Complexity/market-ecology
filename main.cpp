@@ -68,8 +68,6 @@ using namespace boost::program_options;
 /// \return
 int main(int argument_count, char *arguments[])
 {
-
-
     // on windows hosts, prefer to run simulations with below normal priority
     // because otherwise the host may become difficult to interact with
 #if defined(WIN32) || defined(_WIN32) || (defined(__WIN32) && !defined(__CYGWIN__))

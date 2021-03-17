@@ -23,7 +23,7 @@
 #ifndef ME_TRADED_COMPANY_HPP
 #define ME_TRADED_COMPANY_HPP
 
-#include <esl/economics/finance/company.hpp>
+#include <esl/economics/company.hpp>
 using esl::economics::company;
 using esl::law::jurisdiction;
 using esl::simulation::time_point;
