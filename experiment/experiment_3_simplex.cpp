@@ -202,6 +202,9 @@ struct me_model3
 
             environment_.send_messages(*this);
             ++round_;
+            if(step.lower > 1 && round_ > 2){
+                return end_time;
+            }
             ++rounds_;
         }while(step.lower >= first_event_);
 
@@ -215,10 +218,6 @@ struct me_model3
 
 
 
-
-
-
-
 int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, double fv, double tf
 
                       , double nt_agg, double nt_lev
@@ -227,7 +226,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 {
     unsigned int stocks_count               = assets;
     environment e;
-    me_model3 model_(e, parametrization(0, 0, 51 * 252));
+    me_model3 model_(e, parametrization(0, 0, 11 * 252));
 
     std::dynamic_pointer_cast<simulation::parameter::constant<std::uint64_t>>(model_.parameters.values["sample"])->choice = sample;
 
@@ -406,7 +405,7 @@ int experiment_3_parallel(uint64_t sample, double nt_agg, double nt_lev, double 
                                                  , fv_lev
                                                  , tf_agg
                                                  , tf_lev) );
-        if(results_.size() >= 1){
+        if(results_.size() >= 16){
             for(auto &r: results_){
                 r.wait();
             }
@@ -445,7 +444,7 @@ int experiment_3()
 int experiment_3_best(unsigned int precision)
 {
     for(size_t s = 0; s < 8; ++s){
-        experiment_3_parallel(s, 5., 1., 10., 8., 4., 1.0, precision);
+        experiment_3_parallel(s, 5., 1., 10., 8., 40., 2.0, precision);
     }
     return 0;
 }

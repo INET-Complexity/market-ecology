@@ -77,7 +77,7 @@ traded_company::traded_company( const identity<traded_company> &i
 
         if(wiener.size() > tau){
             // zero based index, so subtract another 1 with tau
-            z = (1.0 - omega) * z + omega * wiener[wiener.size() - 1 - tau];
+            z = (1.0 - omega * omega) * z + omega * wiener[wiener.size() - 1 - tau];
         }
         wiener.push_back(z);
 
