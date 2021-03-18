@@ -9,7 +9,7 @@
 /// \brief  Compute a grid-of-simplices
 ///
 /// \return
-int experiment_3();
+int experiment_3(unsigned int precision = 32);
 
 ///
 /// \brief  Compute a simplex with the best (manually-) selected parameters

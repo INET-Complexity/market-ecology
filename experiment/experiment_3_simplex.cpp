@@ -5,7 +5,7 @@
 #include "experiment_3_simplex.hpp"
 
 #include <iostream>
-#include <filesystem>
+#include <esl/data/filesystem.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 #include <esl/computation/environment.hpp>
@@ -417,17 +417,17 @@ int experiment_3_parallel(uint64_t sample, double nt_agg, double nt_lev, double 
 
 ///
 /// \return
-int experiment_3()
+int experiment_3(unsigned int precision)
 {
-    for(double nt_agg: {5.0, 2.0, 10.0, 1.0}){
-        for(double nt_lev: {1.0, 2.0, 4.0}){
-            for(double fv_agg: {10., 12., 8.0, 4.0, 2.0, 1.0, 16.0}){
-                for(double fv_lev: {2.0, 4.0, 1.0,  8.0}){
-                    for(double tf_agg: {1.0, 0.5, 2.0, 3.0, 4.0}){
-                        for(double tf_lev: {1.0, 0.8,  1.5, 2.0}){
+    for(double nt_agg: {4.0, 8.0, 16.0, 2.0}){
+        for(double nt_lev: {2.0, 1.0}){
+            for(double fv_agg: {10., 16., 8.0}){
+                for(double fv_lev: {4.0, 8.0}){
+                    for(double tf_agg: {16.0, 32.}){
+                        for(double tf_lev: {1.0, 2.0}){
                             for(size_t s = 0; s < 2; ++s){
                                 experiment_3_parallel(s, nt_agg, nt_lev, fv_agg,
-                                                      fv_lev, tf_agg, tf_lev);
+                                                      fv_lev, tf_agg, tf_lev, precision);
                             }
                         }
                     }
@@ -444,7 +444,12 @@ int experiment_3()
 int experiment_3_best(unsigned int precision)
 {
     for(size_t s = 0; s < 8; ++s){
-        experiment_3_parallel(s, 5., 1., 10., 8., 40., 2.0, precision);
+        experiment_3_parallel(s,  5.
+            , 1.
+            , 10.
+            , 8.
+            , 40.
+            , 1.0,  precision);
     }
     return 0;
 }
