@@ -226,7 +226,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 {
     unsigned int stocks_count               = assets;
     environment e;
-    me_model3 model_(e, parametrization(0, 0, 11 * 252));
+    me_model3 model_(e, parametrization(0, 0, 6 * 252));
 
     std::dynamic_pointer_cast<simulation::parameter::constant<std::uint64_t>>(model_.parameters.values["sample"])->choice = sample;
 
@@ -448,7 +448,7 @@ int experiment_3_best(unsigned int precision)
             , 1.
             , 10.
             , 8.
-            , 40.
+            , 4.
             , 1.0,  precision);
     }
     return 0;

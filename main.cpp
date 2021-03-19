@@ -84,7 +84,7 @@ int main(int argument_count, char *arguments[])
     options_description description_("Allowed options");
     description_.add_options()
         ("help", "produce help message")
-        ("experiment", value<std::string>()->default_value("experiment_3"), "choose experiment")
+        ("experiment", value<std::string>()->default_value("experiment_3_best"), "choose experiment")
         ("reinvestment", value<double>()->default_value(3.), "reinvestment rate")
         ("ntv", value<double>()->default_value(0.2), "noise trader volatility")
         ("dpv", value<double>()->default_value(0.10), "dividend process volatility")

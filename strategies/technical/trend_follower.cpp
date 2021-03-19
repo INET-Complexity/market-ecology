@@ -102,7 +102,8 @@ time_point trend_follower::invest(shared_ptr<quote_message> message, time_interv
         std::map<time_point, price> &prices_ = i->second;
         if(!prices_.empty() && prices_.rbegin()->first > window_){
             if(prices_.size() > this->window){
-                trend_ = double(prices_[interval.lower - window+1]) / std::max(0.0001, double(prices_[interval.lower - window])) - 1;
+                trend_ =  double(prices_[interval.lower - window+1]) / std::max(0.0001, double(prices_[interval.lower - window])) - 1;
+            trend_*=10;
             }
         }
         trends_.emplace_back(stock_->identifier, trend_, index_, trend_);
