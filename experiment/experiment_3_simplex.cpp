@@ -235,7 +235,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     property_map<markets::quote> traded_assets_;
     property_map<size_t> shares_outstanding_;
 
-    const std::string prefix_ = std::string("output/experiment3_")
+    const std::string prefix_ = std::string("/data/me/best/output/experiment3_")
                                 + std::to_string(nt_agg) + "_"
                                 + std::to_string(nt_lev) + "_"
                                 + std::to_string(fv_agg) + "_"
@@ -257,7 +257,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     std::filesystem::create_directories(prefix_);
 
     for(size_t a = 0; a < stocks_count; ++a){
-        auto traded_company_ = model_.template create<traded_company>(model_.world, jurisdictions::US);
+        auto traded_company_ = model_.template create<traded_company>(model_.world, jurisdictions::US, sample);
 
         traded_company_->outputs["dividend_per_share"]->streams.push_back(make_shared<data::file>(std::to_string(a) + "_dividend.txt", prefix_));
 
@@ -443,13 +443,13 @@ int experiment_3(unsigned int precision)
 
 int experiment_3_best(unsigned int precision)
 {
-    for(size_t s = 0; s < 8; ++s){
-        experiment_3_parallel(s,  5.
-            , 1.
+    for(size_t s = 1; s <= 8; ++s){
+        experiment_3_parallel(s,  4.0
+            , 1.5
             , 10.
-            , 8.
-            , 4.
-            , 1.0,  precision);
+            , 7.
+            , 3.0
+            , 1.1,  precision);
     }
     return 0;
 }
