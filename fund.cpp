@@ -164,6 +164,25 @@ void fund::reset_wealth(price &net_asset_value_, simulation::time_interval ti)
     auto remainder_ = bailout_.value;
 
     output_pnl->put(ti.lower, -bailout_);
+
+
+
+    for(auto &[p, q]: inventory) {
+        auto cast_ = std::dynamic_pointer_cast<loan>(p);
+        if(cast_) {
+            if(remainder_ > 0) {
+                auto dec = std::min<std::uint64_t>(inventory[p].amount, remainder_ / 100);
+                inventory[p].amount -= dec;  // std::uint64_t(inventory[p].amount * bailout_ratio);
+                remainder_ -= dec;
+            } else if(remainder_ < 0) {
+                inventory[p].amount += (-remainder_/ 100);  // std::uint64_t(inventory[p].amount * bailout_ratio);
+                remainder_ = 0;
+            }
+        }
+    }
+
+    if(remainder_){
+
     for(auto &[p, q]: inventory) {
         auto cast_ = std::dynamic_pointer_cast<cash>(p);
         if(cast_){
@@ -178,19 +197,21 @@ void fund::reset_wealth(price &net_asset_value_, simulation::time_interval ti)
         }
     }
 
+
+
+    }
+
+
+
     if(remainder_){
         for(auto &[p, q]: inventory) {
             auto cast_ = std::dynamic_pointer_cast<stock>(p);
-
             if(cast_){
-
                 auto i = lookup_.mark_to_market.find(p->identifier);
                 if(lookup_.mark_to_market.end() == i){
                     continue;
                 }
-
                 auto change_ = remainder_ / std::get<price>(i->second.type).value;
-
                 if(change_ < 0){
                     auto dec = std::min<std::uint64_t>(inventory[p].amount, -change_);
                     inventory[p].amount -= dec;//std::uint64_t(inventory[p].amount * bailout_ratio);
@@ -200,9 +221,10 @@ void fund::reset_wealth(price &net_asset_value_, simulation::time_interval ti)
                     remainder_ = 0;
                 }
             }
+
+
         }
     }
-
 }
 
 

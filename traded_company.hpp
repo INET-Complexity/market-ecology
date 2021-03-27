@@ -84,9 +84,9 @@ public:
     double sigma = 0.10 / sqrt(double(day_count));
 
     ///
-    /// \brief  autocorrelation lag
+    /// \brief  autocorrelation lag of 1 Month = 252 / 12
     ///
-    constexpr static size_t tau        = 21;
+    constexpr static size_t tau        = day_count / 12;
 
     ///
     /// \brief  autocorrelation factor

@@ -5,7 +5,7 @@
 #include "experiment_3_simplex.hpp"
 
 #include <iostream>
-#include <filesystem>
+#include <esl/data/filesystem.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 #include <esl/computation/environment.hpp>
@@ -202,6 +202,9 @@ struct me_model3
 
             environment_.send_messages(*this);
             ++round_;
+            if(step.lower > 1 && round_ > 2){
+                return end_time;
+            }
             ++rounds_;
         }while(step.lower >= first_event_);
 
@@ -215,10 +218,6 @@ struct me_model3
 
 
 
-
-
-
-
 int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, double fv, double tf
 
                       , double nt_agg, double nt_lev
@@ -227,7 +226,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
 {
     unsigned int stocks_count               = assets;
     environment e;
-    me_model3 model_(e, parametrization(0, 0, 51 * 252));
+    me_model3 model_(e, parametrization(0, 0, 6 * 252));
 
     std::dynamic_pointer_cast<simulation::parameter::constant<std::uint64_t>>(model_.parameters.values["sample"])->choice = sample;
 
@@ -236,7 +235,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     property_map<markets::quote> traded_assets_;
     property_map<size_t> shares_outstanding_;
 
-    const std::string prefix_ = std::string("output/experiment3_")
+    const std::string prefix_ = std::string("/data/me/best/output/experiment3_")
                                 + std::to_string(nt_agg) + "_"
                                 + std::to_string(nt_lev) + "_"
                                 + std::to_string(fv_agg) + "_"
@@ -258,7 +257,7 @@ int experiment_3_task(std::uint64_t sample, std::uint64_t assets, double nt, dou
     std::filesystem::create_directories(prefix_);
 
     for(size_t a = 0; a < stocks_count; ++a){
-        auto traded_company_ = model_.template create<traded_company>(model_.world, jurisdictions::US);
+        auto traded_company_ = model_.template create<traded_company>(model_.world, jurisdictions::US, sample);
 
         traded_company_->outputs["dividend_per_share"]->streams.push_back(make_shared<data::file>(std::to_string(a) + "_dividend.txt", prefix_));
 
@@ -418,17 +417,17 @@ int experiment_3_parallel(uint64_t sample, double nt_agg, double nt_lev, double 
 
 ///
 /// \return
-int experiment_3()
+int experiment_3(unsigned int precision)
 {
-    for(double nt_agg: {5.0, 2.0, 10.0, 1.0}){
-        for(double nt_lev: {1.0, 2.0, 4.0}){
-            for(double fv_agg: {10., 12., 8.0, 4.0, 2.0, 1.0, 16.0}){
-                for(double fv_lev: {2.0, 4.0, 1.0,  8.0}){
-                    for(double tf_agg: {1.0, 0.5, 2.0, 3.0, 4.0}){
-                        for(double tf_lev: {1.0, 0.8,  1.5, 2.0}){
+    for(double nt_agg: {4.0, 8.0, 16.0, 2.0}){
+        for(double nt_lev: {2.0, 1.0}){
+            for(double fv_agg: {10., 16., 8.0}){
+                for(double fv_lev: {4.0, 8.0}){
+                    for(double tf_agg: {16.0, 32.}){
+                        for(double tf_lev: {1.0, 2.0}){
                             for(size_t s = 0; s < 2; ++s){
                                 experiment_3_parallel(s, nt_agg, nt_lev, fv_agg,
-                                                      fv_lev, tf_agg, tf_lev);
+                                                      fv_lev, tf_agg, tf_lev, precision);
                             }
                         }
                     }
@@ -444,8 +443,13 @@ int experiment_3()
 
 int experiment_3_best(unsigned int precision)
 {
-    for(size_t s = 0; s < 8; ++s){
-        experiment_3_parallel(s, 5., 1., 10., 8., 4., 1.0, precision);
+    for(size_t s = 1; s <= 8; ++s){
+        experiment_3_parallel(s,  4.0
+            , 1.5
+            , 10.
+            , 7.
+            , 3.0
+            , 1.1,  precision);
     }
     return 0;
 }
