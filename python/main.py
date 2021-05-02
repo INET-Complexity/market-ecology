@@ -13,7 +13,9 @@ class SingleExperiment(esl.simulation.model):
 
 
 if __name__ == "__main__":
-    e = esl.computation.environment
+    e = esl.computation.environment()
+    esl.simulation.parameter.par
+    m = SingleExperiment(e, {})
 
 
 
