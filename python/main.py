@@ -1,15 +1,19 @@
 import esl
 
-class SingleExperiment(esl.model):
-    def __init__(self):
-        # SingleExperiment()
-        pass
+print(esl.version())
+
+
+
+
+class SingleExperiment(esl.simulation.model):
+    def __init__(self, env, par):
+        super().__init__(self, env,par)
+
 
 
 
 if __name__ == "__main__":
-
-    print(esl.version())
+    e = esl.computation.environment
 
 
 
