@@ -12,8 +12,13 @@ class SingleExperiment(esl.simulation.model):
         return model.compute_clearing_quotes()
 
     def step(self, time_interval):
-        print("step")
-        pass
+        """
+            Here we do model-specific logic, such as deciding when to stop the simulation early
+        :param time_interval:
+        :return:
+        """
+        print(f"Here we do model-specific logic {time_interval}")
+        return time_interval.upper
 
 
 
@@ -23,4 +28,9 @@ if __name__ == "__main__":
 
     model = SingleExperiment(environment, parameters)
 
-    environment.run(model)
+    se = esl.simulation.time_interval(1,10)
+
+    a = model.step(se)
+    print(model.start)
+
+
