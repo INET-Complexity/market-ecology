@@ -1,5 +1,6 @@
 import esl
 
+from esl.economics.markets.walras import excess_demand_model, differentiable_order_message
 
 
 class Fund(esl.economics.company):
@@ -13,15 +14,34 @@ class NoiseTrader(Fund):
     def __init__(self, identifier):
         super().__init__(identifier)
 
-    def act(self, esl.simulation.time_interval si, esl.simulation.seed):
+    def act(self, si: esl.simulation.time_interval, s: esl.seed):
+
+        pass
+
+    class NoiseTraderOrder(differentiable_order_message):
+
+        def __init__(self, sender, recipient, sent, received):
+            super().__init__(sender, recipient, sent, received)
+            self.sender = sender
+
+        def excess_demand(self, quotes):
+            """
+
+            :param quotes: A dict with property_identifier keys and pairs (quote, variable)
+            :return:
+            """
+            print(f"The Walrasian price setter suggests the following prices: {quotes}")
+            ed = {k: ((i+3.) - (float(v[0]) * v[1])) for i,  (k, v) in enumerate(quotes.items())}
+            print(f"Agent {self.sender}'s excess demand at these prices is: {ed}")
+            return ed
+
 
 
 
 class SingleExperiment(esl.simulation.model):
     def __init__(self, environment, parameters):
         super().__init__(environment, parameters)
-        self.economy = esl.simulation.world()
-
+        #self.economy = esl.simulation.world()
 
     def clear_market(initial_prices, excess_demand_functions):
         model = esl.economics.markets.walras.excess_demand_model(initial_prices)
@@ -42,16 +62,18 @@ class SingleExperiment(esl.simulation.model):
 
 
 if __name__ == "__main__":
-    nt = NoiseTrader(esl.simulation.identity([1,2]))
-
 
 
     environment = esl.computation.environment()
     parameters = esl.simulation.parameter.parametrization()
 
     model = SingleExperiment(environment, parameters)
-    print(model)
-    print(environment)
+
+    print(model.world)
+    print(model.world.create())
+
+    nt = NoiseTrader(esl.simulation.identity([1,2]))
+
 
 
 
