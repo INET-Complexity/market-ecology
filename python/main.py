@@ -1,9 +1,19 @@
 import esl
 
 from esl.computation import environment
-from esl.simulation import identity, model, parameter
+from esl.simulation import identity, model, parameter, time_point, time_interval
 
 from esl.economics.markets.walras import excess_demand_model, differentiable_order_message
+
+
+class DebugEnv(environment):
+    def __init__(self):
+        super().__init__()
+        pass
+
+    def run(self, sim):
+        print("LOL!")
+        print(super().run)
 
 
 class Fund(esl.economics.company):
@@ -11,16 +21,13 @@ class Fund(esl.economics.company):
         super().__init__(identifier, jurisdiction)
         pass
 
-
-sss = esl.seed()
-
 class NoiseTrader(Fund):
 
     def __init__(self, identifier):
         super().__init__(identifier)
 
     def act(self, si: esl.simulation.time_interval, s: esl.seed):
-        pint("NT act")
+        print("NT act")
         pass
 
     class NoiseTraderOrder(differentiable_order_message):
@@ -69,16 +76,19 @@ class SingleExperiment(esl.simulation.model):
 if __name__ == "__main__":
 
 
-    environment =  environment()
+    e =  DebugEnv()
     parameters = parameter.parametrization()
 
-    model = SingleExperiment(environment, parameters)
+    m = SingleExperiment(e, parameters)
+
+    print(e.run)
 
     nt = NoiseTrader(identity([1,2]))
 
-    se = esl.simulation.time_interval(1,10)
+    se = time_interval(1,10)
 
-    a = model.step(se)
-    print(a)
+    e.run(m)
+
+
 
 
