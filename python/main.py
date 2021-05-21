@@ -2,11 +2,19 @@ import esl
 
 from esl.computation import environment
 from esl.simulation import identity, model, parameter, time_point, time_interval
-
+from esl.economics import company
 from esl.economics.markets.walras import excess_demand_model, differentiable_order_message
 
 
-class Fund(esl.economics.company):
+class PubliclyTradedCompany(company):
+    def __init__(self, identifier, jurisdiction = esl.law.jurisdictions.US):
+        super().__init__(identifier, jurisdiction)
+
+    def upcoming_dividend(self, interval, seed):
+        print("pay dividend")
+
+
+class Fund(company):
     def __init__(self, identifier, jurisdiction = esl.law.jurisdictions.US):
         super().__init__(identifier, jurisdiction)
         pass
@@ -67,7 +75,7 @@ class ValueInvestor(Fund):
 
 
 
-class Experiment1(esl.simulation.model):
+class Experiment1(model):
     def __init__(self, environment, parameters):
         super().__init__(environment, parameters)
         #self.economy = esl.simulation.world()
@@ -86,6 +94,8 @@ class Experiment1(esl.simulation.model):
         # Here we do model-specific logic
 
         print(f"{type(self).__name__} time step {time_interval}")
+
+
         return time_interval.upper
 
 
@@ -96,9 +106,11 @@ if __name__ == "__main__":
 
     m = Experiment1(e, parameters)
 
+    model.world = esl.simulation.world()
+    nt = NoiseTrader(model.world.create())
+    vi = ValueInvestor(model.world.create())
 
-    nt = NoiseTrader(identity([1]))
-    vi = ValueInvestor(identity([2]))
+    print(nt.identifier)
 
     simulation_timespan = time_interval(1, 252*10)
 
