@@ -100,6 +100,8 @@ class Experiment1(model):
 
 
 
+
+
 if __name__ == "__main__":
     e =  environment()
     parameters = parameter.parametrization()
