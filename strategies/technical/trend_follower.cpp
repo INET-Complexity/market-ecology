@@ -78,8 +78,7 @@ time_point trend_follower::invest(shared_ptr<quote_message> message, time_interv
         return interval.upper;
     }
 
-    LOG(trace) << describe() << " " << identifier << " inventory " <<  inventory << std::endl;
-
+    //LOG(trace) << describe() << " " << identifier << " inventory " <<  inventory << std::endl;
 
     vector<tuple<identity<property>, double, size_t, double>> trends_;
     size_t index_ = 0;
@@ -109,7 +108,6 @@ time_point trend_follower::invest(shared_ptr<quote_message> message, time_interv
         trends_.emplace_back(stock_->identifier, trend_, index_, trend_);
         output_signal->put(interval.lower, trend_);
         ++index_;
-
     }
 
     map<identity<property>, double> valuations_;
@@ -117,9 +115,7 @@ time_point trend_follower::invest(shared_ptr<quote_message> message, time_interv
         valuations_.emplace(get<0>(t),  get<3>(t));
     }
 
-
-
-    LOG(trace) << "create_message<momentum_ddsf> with "  << valuations_.size() << " valuations: " << valuations_ << std::endl;
+    //LOG(trace) << "create_message<momentum_ddsf> with "  << valuations_.size() << " valuations: " << valuations_ << std::endl;
     auto message_ = this->template create_message<momentum_ddsf>(
         message->sender, interval.lower, (*this), message->sender,
         interval.lower, interval.lower, nav_, valuations_);
@@ -136,19 +132,17 @@ time_point trend_follower::invest(shared_ptr<quote_message> message, time_interv
             message_->supply.emplace(p->identifier, std::make_tuple(q, quantity(0)));
         }else{
             auto cast2_ = std::dynamic_pointer_cast<securities_lending_contract>(p);
-            if(cast2_){
-                if(0 == q.amount){
-                    continue;
-                }
-                if(message_->supply.end() != message_->supply.find(cast2_->security)){
-                    std::get<1>( message_->supply.find(cast2_->security)->second ) = q;
-                }else{
-                    message_->supply.emplace(cast2_->security, std::make_tuple(quantity(0), q));
-                }
+            if(!cast2_ || 0 == q.amount){
+                continue;
+            }
+            if(message_->supply.end() != message_->supply.find(cast2_->security)){
+                std::get<1>( message_->supply.find(cast2_->security)->second ) = q;
+            }else{
+                message_->supply.emplace(cast2_->security, std::make_tuple(quantity(0), q));
             }
         }
     }
-    return interval.upper;
+    return interval.lower;
 }
 
 map<identity<law::property>, esl::variable>

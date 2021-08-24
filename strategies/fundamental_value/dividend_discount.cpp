@@ -124,7 +124,8 @@ time_point dividend_discount::invest(
             }
         }
     }
-    return interval.upper;
+
+    return interval.lower;
 }
 
 ///

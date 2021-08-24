@@ -166,7 +166,7 @@ time_point mean_reverting_noise_trader::invest(
         }
     }
 
-    return interval.upper;
+    return interval.lower;
 }
 
 ///
