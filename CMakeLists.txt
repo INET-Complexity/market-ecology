@@ -91,15 +91,12 @@ LIST(APPEND Boost_LIBRARIES
         serialization
         unit_test_framework
         thread
-        #log
-        #log_setup
         )
-#ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
-#ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
+
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 ################################################################################
 IF(WIN32)
-    LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM  )
+    LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM )
 ELSE()
     LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR})
 ENDIF()
@@ -112,12 +109,9 @@ IF(WITH_PYTHON)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
 ENDIF()
 
-
-
 INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/ESL)
 
 ################################################################################
-
 
 LIST(APPEND ALL_LINKED_LIBRARIES pthread esl)
 
