@@ -76,7 +76,7 @@ public:
     ///
     /// \brief  2% growth rate annually, converted to daily
     ///
-    double mu = pow(1.02, 1./day_count) - 1;
+    double mu = pow(1.01, 1./day_count) - 1;
 
     ///
     /// \brief  10% volatility annually, converted to daily

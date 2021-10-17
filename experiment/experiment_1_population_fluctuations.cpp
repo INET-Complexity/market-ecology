@@ -191,16 +191,16 @@ int volatility_illustration( unsigned int stocks_count )
     size_t sample = 1;
 
     environment e;
-    main_model model_(e, parametrization(0, 0, 252 * 200));
+    main_model model_(e, parametrization(0, 0, 50 * 252));
 
     vector<tuple<shared_ptr<traded_company>, share_class>> shares_;
     map<tuple<identity<traded_company>, share_class>, identity<property>> stocks_;
     property_map<markets::quote> traded_assets_;
     property_map<size_t> shares_outstanding_;
 
-    double nt = 0.42;
-    double fv = 0.33;
-    double tf = 0.25;
+    double nt = 0.4;
+    double fv = 0.3;
+    double tf = 0.3;
 
     std::string prefix_ = "output/volatility_illustration";
 
@@ -258,7 +258,7 @@ int volatility_illustration( unsigned int stocks_count )
 
     auto participants_ = vector<shared_ptr<fund>>();
 
-    size_t target_date_     = 252;
+    size_t target_date_     = 21;
     size_t noise_traders    = 1;
     size_t value_investors  = 1;
     size_t trend_followers  = 1;
@@ -268,7 +268,7 @@ int volatility_illustration( unsigned int stocks_count )
         mr_->target_net_asset_value.emplace(target_nav_nt_);
         mr_->target_date = target_date_;
         mr_->aggression = 5.0;
-        mr_->maximum_leverage = 1.0;
+        mr_->maximum_leverage = 0.666;
         participants_.push_back(mr_);
         set_outputs(mr_);
     }
@@ -277,8 +277,8 @@ int volatility_illustration( unsigned int stocks_count )
         auto fv_ = model_.template create<dividend_discount>(model_.world);
         fv_->target_net_asset_value.emplace(target_nav_fv_);
         fv_->target_date = target_date_;
-        fv_->aggression = 6.0;
-        fv_->maximum_leverage = 4.0;
+        fv_->aggression = 3.0;
+        fv_->maximum_leverage = 3;
         participants_.push_back(fv_);
         set_outputs(fv_);
     }
@@ -287,8 +287,8 @@ int volatility_illustration( unsigned int stocks_count )
         auto tf_ = model_.template create<trend_follower>(model_.world,esl::law::jurisdictions::US);
         tf_->target_net_asset_value.emplace(target_nav_tf_);
         tf_->target_date = target_date_;
-        tf_->aggression = 1.5; // 1.5
-        tf_->maximum_leverage = 0.8; // 0.8
+        tf_->aggression = 4;
+        tf_->maximum_leverage = 0.666;
         participants_.push_back(tf_);
         set_outputs(tf_);
     }

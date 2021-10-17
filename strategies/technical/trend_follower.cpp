@@ -166,7 +166,7 @@ momentum_ddsf::excess_demand(
                 auto supply_short_ = double(std::get<1>(j->second));
                 auto lambda_ = leverage * 2;
                 result_.emplace(k, scale_ *
-                                   (lambda_ / (1. + std::exp(  - agression * value_)) - lambda_ / 2. + 0.5 )
+                leverage *  (2 / (1. + std::exp(  - agression * value_)) - 0.5)
                                    - (supply_long_ - supply_short_) * (quoted_price_ * variable_)
                 );
             }

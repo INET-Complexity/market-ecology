@@ -76,11 +76,11 @@ time_point dividend_discount::invest(
             auto shares_outstanding_ = market_data.shares_outstanding.find(property_->identifier)->second;
             auto dividend_rate_ = (payment_ / shares_outstanding_);
 
-            auto growth_ = 0.000'1;
+            auto growth_ = pow(1.01, 1./day_count) - 1;
             auto lower_limit_ = 0.000'000'1;
             growth_ = std::max(growth_, lower_limit_);
-            auto compounded_rate_return_ = 0.000'2; // FVI expects company to appreciate at this rate
-            auto finite_minimum_ = 0.000'1;
+            auto compounded_rate_return_ = pow(1.02, 1./day_count) - 1; // FVI expects company to appreciate at this rate
+            auto finite_minimum_ = 0.000'000'1;
             auto gordon_ = dividend_rate_ / (std::max(finite_minimum_, compounded_rate_return_ - growth_));
             gordon_ = std::max(std::min(gordon_, 10'000.00), lower_limit_);
             fundamental_value_.value =  int64_t(gordon_* 100) ;
@@ -163,12 +163,12 @@ dividend_discount_ddsf::excess_demand(
             auto lambda_ = leverage * 2;
             // if we have a neutral position
             if(supply.end() == j){
-                result_.emplace(k,  scale_ *(lambda_ / (1. + adept::exp(- agression * (std::log2(value_) - adept::log2(quoted_price_ * variable_)))) - lambda_/2 +0.5  )
+                result_.emplace(k,  scale_ *  leverage *  (2. / (1. + adept::exp(  - agression * (std::log2(value_) - adept::log2(quoted_price_ * variable_)))) - 0.5)
                                     * (quoted_price_ * variable_));
             }else{
                 auto supply_long_ = double(std::get<0>(j->second));
                 auto supply_short_ = double(std::get<1>(j->second));
-                result_.emplace(k, scale_ *(lambda_ / (1. + adept::exp(- agression * (std::log2(value_) - adept::log2(quoted_price_ * variable_)))) - lambda_/2 +0.5  )
+                result_.emplace(k, scale_ *  leverage *  (2. / (1. + adept::exp(  - agression * (std::log2(value_) - adept::log2(quoted_price_ * variable_)))) - 0.5)
                 - (supply_long_ - supply_short_) * (quoted_price_ * variable_));
             }
         }

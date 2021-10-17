@@ -51,13 +51,13 @@ traded_company::traded_company( const identity<traded_company> &i
 , owner<stock>(i)
 , identifiable_as<traded_company>()
 , company(i,j)
-, dividend_per_share(0.01)
+, dividend_per_share(0.01/2.52)
 {
     create_output<double>("dividend_per_share");
 
     std::seed_seq seed_ {
             std::uint64_t(std::hash<identity<agent>>()(i))
-            , sample + 2
+            , sample + 0
     };
 
     std::minstd_rand0 generator_(seed_);
@@ -107,6 +107,7 @@ time_point traded_company::act(time_interval interval, std::seed_seq &seed)
 
     if(interval.lower >= policy_.announcement_date) {
         if(last_announced_ < policy_.announcement_date) {
+            LOG(trace) << interval << " announcing dividend " << std::endl;
             last_announced_ = policy_.announcement_date;
 
             for(const auto &s : unique_shareholders()) {
@@ -115,6 +116,7 @@ time_point traded_company::act(time_interval interval, std::seed_seq &seed)
             }
         }
     } else {
+        LOG(trace) << interval << " setting next dividend date " << std::endl;
         next_event_ = std::min<time_point>(
                 policy_.announcement_date, next_event_);
     }
@@ -138,31 +140,15 @@ std::optional<dividend_policy> traded_company::upcoming_dividend(time_interval i
     std::minstd_rand0 generator_(seed);
 
     unsigned int dividend_receiving_shares_ = 0;
-    for(const auto &[s, q] : shares_outstanding) {
+    for(const auto &[s, q]: shares_outstanding) {
         if(s.dividend) {
             dividend_receiving_shares_ += q;
         }
     }
 
-
-    outputs["dividend_per_share"]->write(std::make_tuple(interval.lower,
-                                                         dividends_per_share[interval.lower]));
-    if(interval.lower > 1 && dividends_per_share[interval.lower] != dividends_per_share[interval.lower-1]){
-        //std::cout << interval << " DIV!" << std::endl;
-    }
-    auto unappropriated_profit_ =
-        esl::economics::cash(USD).price( dividends_per_share[interval.lower] *
-                                        dividend_receiving_shares_);
-    //LOG(trace) << "company " << identifier << " pays out "
-    //           << unappropriated_profit_
-    //           << " in profits, distributed over "
-    //           << dividend_receiving_shares_ << " shares, "
-    //           << dividend_per_share
-    //           << " (" << (dividend_per_share / (0.02 - mu)) << ")"
-    //           << std::endl;
-
-    auto dividends_ =
-        compute_dividend_per_share(unappropriated_profit_);
+    outputs["dividend_per_share"]->write(std::make_tuple(interval.lower, dividends_per_share[interval.lower]));
+    auto unappropriated_profit_ = esl::economics::cash(USD).price( dividends_per_share[interval.lower] * dividend_receiving_shares_);
+    auto dividends_ = compute_dividend_per_share(unappropriated_profit_);
 
     dividend_policy policy_(
             interval.lower
